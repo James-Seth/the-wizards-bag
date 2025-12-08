@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | Kevin's Deck Boxes</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="/" class="logo">Kevin's Deck Boxes</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/products">Products</a></li>
+                    <li><a href="/products?category=deck-boxes">Deck Boxes</a></li>
+                    <li><a href="/products?category=tokens">Tokens</a></li>
+                    <li><a href="/products?category=accessories">Accessories</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <%- body %>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Kevin's Deck Boxes. All rights reserved.</p>
+    </footer>
+</body>
+</html>

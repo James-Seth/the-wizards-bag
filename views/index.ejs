@@ -1,0 +1,29 @@
+<% const body = `
+<div class="hero">
+    <h1>Welcome to Kevin's Deck Boxes</h1>
+    <p>Premium custom deck boxes, tokens, and TTRPG accessories</p>
+    <a href="/products" class="cta-button">Shop Now</a>
+</div>
+
+<section class="featured-categories">
+    <h2>Shop by Category</h2>
+    <div class="category-grid">
+        <div class="category-card">
+            <h3>Deck Boxes</h3>
+            <p>Custom designed deck boxes for your trading cards</p>
+            <a href="/products?category=deck-boxes">View Deck Boxes</a>
+        </div>
+        <div class="category-card">
+            <h3>Tokens</h3>
+            <p>High-quality gaming tokens and counters</p>
+            <a href="/products?category=tokens">View Tokens</a>
+        </div>
+        <div class="category-card">
+            <h3>Accessories</h3>
+            <p>Essential gaming accessories and tools</p>
+            <a href="/products?category=accessories">View Accessories</a>
+        </div>
+    </div>
+</section>
+`; %>
+<%- include('layouts/main', { title, body }) %>

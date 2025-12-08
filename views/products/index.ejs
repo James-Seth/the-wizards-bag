@@ -1,0 +1,28 @@
+<% const body = `
+<div class="products-header">
+    <h1>Product Catalog</h1>
+    <div class="category-filters">
+        <a href="/products" class="filter-btn <%= selectedCategory === 'all' ? 'active' : '' %>">All</a>
+        <a href="/products?category=deck-boxes" class="filter-btn <%= selectedCategory === 'deck-boxes' ? 'active' : '' %>">Deck Boxes</a>
+        <a href="/products?category=tokens" class="filter-btn <%= selectedCategory === 'tokens' ? 'active' : '' %>">Tokens</a>
+        <a href="/products?category=accessories" class="filter-btn <%= selectedCategory === 'accessories' ? 'active' : '' %>">Accessories</a>
+    </div>
+</div>
+
+<div class="products-grid">
+    <% if (products.length === 0) { %>
+        <p class="no-products">No products found in this category.</p>
+    <% } else { %>
+        <% products.forEach(product => { %>
+            <div class="product-card">
+                <img src="<%= product.image %>" alt="<%= product.name %>">
+                <h3><%= product.name %></h3>
+                <p class="price">$<%= product.price.toFixed(2) %></p>
+                <p class="description"><%= product.description.substring(0, 100) %>...</p>
+                <a href="/products/<%= product._id %>" class="view-btn">View Details</a>
+            </div>
+        <% }); %>
+    <% } %>
+</div>
+`; %>
+<%- include('../layouts/main', { title, body }) %>

@@ -1,0 +1,41 @@
+<% const body = `
+<div class="product-detail">
+    <div class="product-detail-grid">
+        <div class="product-image">
+            <img src="${product.image}" alt="${product.name}">
+        </div>
+        <div class="product-info">
+            <h1>${product.name}</h1>
+            <p class="price">$${product.price.toFixed(2)}</p>
+            <p class="category">Category: ${product.category.replace('-', ' ')}</p>
+            
+            <div class="description">
+                <h3>Description</h3>
+                <p>${product.description}</p>
+            </div>
+
+            ${product.features && product.features.length > 0 ? `
+                <div class="features">
+                    <h3>Features</h3>
+                    <ul>
+                        ${product.features.map(feature => `<li>${feature}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+
+            <div class="stock-info">
+                ${product.inStock ? 
+                    `<p class="in-stock">✓ In Stock (${product.inventory} available)</p>` : 
+                    `<p class="out-of-stock">✗ Out of Stock</p>`
+                }
+            </div>
+
+            <div class="actions">
+                <button class="add-to-cart-btn" disabled>Add to Cart (Coming in Phase 2)</button>
+                <a href="/products" class="back-btn">← Back to Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+`; %>
+<%- include('../layouts/main', { title, body }) %>
