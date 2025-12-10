@@ -1,32 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | A Wizards Bag</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="nav-container">
-                <a href="/" class="logo">A Wizards Bag</a>
-                <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/products">Products</a></li>
-                    <li><a href="/products?category=deck-boxes">Deck Boxes</a></li>
-                    <li><a href="/products?category=tokens">Tokens</a></li>
-                    <li><a href="/products?category=accessories">Accessories</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+<%- include('../layouts/header') %>
 
-    <main>
-        <div class="product-detail">
-            <div class="product-detail-grid">
-                <div class="product-image">
-                    <img src="<%= product.image %>" alt="<%= product.name %>">
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image">
+                <img src="<%= product.image %>" alt="<%= product.name %>" class="img-fluid rounded">
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="product-info">
+                <h1><%= product.name %></h1>
+                <p class="text-muted mb-3">Category: <%= product.category %></p>
+                
+                <div class="price mb-3">
+                    <span class="h2 text-success">$<%= product.price.toFixed(2) %></span>
+                </div>
+                
+                <div class="description mb-4">
+                    <h5>Description</h5>
+                    <p><%= product.description %></p>
+                </div>
+                
+                <% if (product.features && product.features.length > 0) { %>
+                <div class="features mb-4">
+                    <h5>Features</h5>
+                    <ul class="list-unstyled">
+                        <% product.features.forEach(feature => { %>
+                        <li><i class="fas fa-check text-success me-2"></i><%= feature %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+                <% } %>
+                
+                <div class="inventory mb-4">
+                    <% if (product.inventory > 0) { %>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check me-1"></i>
+                            <%= product.inventory %> in stock
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times me-1"></i>
+                            Out of stock
+                        </span>
+                    <% } %>
+                </div>
+                
+                <% if (product.inventory > 0) { %>
+                <div class="product-quantity-section">
+                    <div class="quantity-row">
+                        <div class="quantity-label-section">
+                            <label for="quantity-<%= product._id %>">Quantity:</label>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" data-action="decrease" data-target="quantity-<%= product._id %>">
+                                    -
+                                </button>
+                                <input type="number" class="quantity-input" 
+                                       id="quantity-<%= product._id %>" 
+                                       value="1" min="1" max="<%= product.inventory %>">
+                                <button class="quantity-btn" data-action="increase" data-target="quantity-<%= product._id %>">
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-to-cart-section">
+                            <button class="checkout-btn add-to-cart-btn" 
+                                    data-product-id="<%= product._id %>">
+                                🛒 Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                
+                <div class="actions">
+                    <a href="/products" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../layouts/footer') %>
                 </div>
                 <div class="product-info">
                     <h1><%= product.name %></h1>
@@ -67,7 +126,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 A Wizards Bag. All rights reserved.</p>
+        <p>&copy; 2024 The Wizard's Bag. All rights reserved.</p>
     </footer>
 </body>
 </html>

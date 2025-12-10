@@ -1,7 +1,7 @@
 module.exports = {
   // Application settings
   app: {
-    name: 'A Wizards Bag',
+    name: 'The Wizards Bag',
     version: '1.0.0',
     description: 'E-commerce website fordeck boxes and TTRPG accessories',
     author: 'Kevin',

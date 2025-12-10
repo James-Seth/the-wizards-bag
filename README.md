@@ -1,10 +1,10 @@
-# A Wizards Bag
+# The Wizards Bag
 
-**A Wizards Bag** is an e-commerce platform designed specifically for tabletop gaming enthusiasts and trading card players. This Node.js application provides a comprehensive marketplace for custom deck boxes, premium gaming accessories, and TTRPG essentials. The **primary** purpose of this project is to develop and refine skills in building full-stack applications.
+**The Wizards Bag** is an e-commerce platform designed specifically for tabletop gaming enthusiasts and trading card players. This Node.js application provides a comprehensive marketplace for custom deck boxes, premium gaming accessories, and TTRPG essentials. The **primary** purpose of this project is to develop and refine skills in building full-stack applications.
 
 ## What I'm Building Specifically
 
-This project represents a complete e-commerce solution currently designed for a specific company selling custom gaming products. However, the architecture is built with scalability in mind - future iterations may evolve into a multi-vendor marketplace where independent artisans can showcase and sell their handcrafted gaming accessories. Whether you're a Magic: The Gathering player protecting valuable cards, a D&D enthusiast organizing dice and miniatures, or a game master seeking unique accessories, A Wizards Bag serves as your one-stop magical stopping place. Like the loot goblin reaching into a wizards bag. 
+This project represents a complete e-commerce solution currently designed for a specific company selling custom gaming products. However, the architecture is built with scalability in mind - future iterations may evolve into a multi-vendor marketplace where independent artisans can showcase and sell their handcrafted gaming accessories. Whether you're a Magic: The Gathering player protecting valuable cards, a D&D enthusiast organizing dice and miniatures, or a game master seeking unique accessories, The Wizards Bag serves as your one-stop magical stopping place. Like the loot goblin reaching into a wizards bag. 
 
 **Key Vision:**
 - **Premium Card Protection** - Custom deck boxes (wood, carved  with artistic flair)
@@ -21,32 +21,62 @@ This project represents a complete e-commerce solution currently designed for a 
 
 ## Features
 
-- Product catalog with filtering
-- Individual product detail pages
-- MongoDB database integration
-- EJS templating with layouts
-- Express Validator for input validation
-- Responsive design
+- **Product Catalog** - Browse and filter products by category
+- **Product Detail Pages** - Comprehensive product information and images
+- **MongoDB Integration** - Robust database with Mongoose ODM
+- **EJS Templating** - Server-side rendering with reusable layouts
+- **Input Validation** - Express Validator for secure data handling
+- **Bootstrap 5 Framework** - Modern, responsive UI components
+- **Mobile-First Design** - Optimized navigation and touch-friendly interface
+- **CDN Integration** - Fast loading with Bootstrap and Font Awesome CDNs
+- **Professional Architecture** - MVC pattern with organized folder structure
 
 
 ## Project Structure
 
 ```
+├── config/
+│   ├── app.js           # Application configuration
+│   └── database.js      # MongoDB connection setup
+├── docs/
+│   ├── API.md           # API documentation
+│   └── deployment.md    # Deployment guide
+├── middleware/
+│   └── validation.js    # Express Validator middleware
+├── utils/
+│   ├── helpers.js       # Utility functions
+│   └── logger.js        # Winston logging configuration
+├── tests/
+│   ├── helpers.test.js  # Helper function tests
+│   └── products.test.js # Product route tests
 ├── src/
-│   ├── models/          # MongoDB models
-│   ├── routes/          # Express routes
-│   ├── middleware/      # Custom middleware (validation, etc.)
+│   ├── models/          # MongoDB models (Product.js, Order.js)
+│   ├── routes/          # Express routes (products.js)
 │   └── server.js        # Main application entry point
 ├── views/
 │   ├── layouts/         # EJS layout templates
+│   │   ├── main.ejs     # Primary layout with Bootstrap navbar
+│   │   ├── header.ejs   # Header layout for product pages
+│   │   └── footer.ejs   # Footer with scripts
 │   ├── products/        # Product-related views
-│   └── *.ejs           # Page templates
+│   │   ├── index.ejs    # Product catalog page
+│   │   └── detail.ejs   # Individual product pages
+│   ├── cart/
+│   │   └── index.ejs    # Shopping cart page
+│   ├── index.ejs        # Homepage
+│   └── error.ejs        # Error page template
 ├── public/
-│   ├── css/            # Stylesheets
-│   ├── js/             # Client-side JavaScript
-│   └── images/         # Static images
-└── scripts/
-    └── seedData.js     # Database seeding script
+│   ├── css/
+│   │   └── style.css    # Custom styles (optimized, 320 lines)
+│   ├── js/
+│   │   └── main.js      # Client-side JavaScript
+│   └── images/          # Static product images
+├── scripts/
+│   └── seedData.js      # Database seeding script
+├── logs/                # Winston log files (auto-created)
+├── .env                 # Environment variables
+├── package.json         # Dependencies and scripts
+└── README.md           # Project documentation
 ```
 
 ## Getting Started
@@ -103,24 +133,28 @@ The application uses Express Validator for input validation:
 ## Technologies Used
 
 - **Backend:** Node.js, Express.js
-- **Database:** MongoDB with Mongoose
-- **Templating:** EJS with layouts
-- **Validation:** Express Validator
-- **Logging:** Winston (with file rotation)
+- **Database:** MongoDB 
+- **Frontend Framework:** Bootstrap 5.1.3 (CDN)
+- **Icons:** Font Awesome 6.0.0
+- **Templating:** EJS with reusable layouts and partials
+- **Validation:** Express Validator 
+- **Logging:** Winston with file rotation
+- **Session Management:** Express-session for cart persistence
 - **Configuration:** Environment-based config management
 - **Testing:** Jest (unit & integration tests)
-- **Development:** Nodemon
-- **Architecture:** MVC pattern with professional folder structure
+- **Development:** Nodemon with auto-reload
+- **Architecture:** Professional MVC pattern with organized structure
 
 ## Future Updates:
 
-### Phase 1: Shopping Cart System (Next Release)
-- **Shopping Cart Functionality** - Add/remove/update items in cart
-- **Session-based Cart Storage** - Cart persistence across page refreshes
-- **Cart Management** - View cart contents with running totals
-- **Quantity Controls** - Increase/decrease item quantities
-- **Checkout Foundation** - Basic checkout page with dummy payment
-- **Continue Shopping Flow** - Seamless navigation between cart and products
+### Phase 1: Shopping Cart System (In Development - December 2025)
+- **Shopping Cart Functionality** - Add/remove/update items with AJAX
+- **Session-based Persistence** - Cart survives page refreshes and navigation
+- **Real-time Cart Management** - Live totals and quantity updates
+- **Mobile-Optimized Cart** - Touch-friendly controls and responsive design
+- **Checkout Foundation** - Customer information and order summary
+- **Enhanced UX** - Loading states, success/error messaging
+- **Cart Validation** - Stock checking and quantity limits
 
 ### Phase 2: User Authentication & Admin
 - **User Registration/Login** - Account creation and authentication
@@ -130,7 +164,7 @@ The application uses Express Validator for input validation:
 - **Inventory Management** - Real-time stock updates
 
 ### Phase 3: Advanced E-commerce
-- **Payment Integration** - Stripe/PayPal processing
+- **Payment Integration** - Stripe/PayPal processing (This will be in the docs as a how to because you need a paypal business account for the api key required in the app)
 - **Order Management** - Complete order lifecycle
 - **Email Notifications** - Order confirmations and updates
 - **Search & Filters** - Enhanced product discovery
