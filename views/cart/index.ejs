@@ -1,0 +1,114 @@
+<%- include('../layouts/main') %>
+
+<div class="cart-page">
+  <div class="cart-content">
+    <h2 class="cart-title">
+      🛒 Shopping Cart
+    </h2>
+    
+    <% if (!cart.items || cart.items.length === 0) { %>
+      <!-- Empty Cart -->
+      <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Add some magical items to get started!</p>
+        <a href="/products" class="cta-button">
+          ✨ Continue Shopping
+        </a>
+      </div>
+    <% } else { %>
+      <!-- Cart Items -->
+      <div class="cart-items">
+        <% cart.items.forEach(item => { %>
+          <div class="cart-item" data-item-id="<%= item._id %>">
+            <div class="cart-item-content">
+              <!-- Product Info -->
+              <div class="cart-item-info">
+                <% if (item.productId && item.productId.image) { %>
+                  <img src="<%= item.productId.image %>" alt="<%= item.name %>" 
+                       class="cart-item-image">
+                <% } else { %>
+                  <div class="cart-item-placeholder">📦</div>
+                <% } %>
+                <div class="cart-item-details">
+                  <h4>
+                    <% if (item.productId) { %>
+                      <a href="/products/<%= item.productId._id %>">
+                        <%= item.name %>
+                      </a>
+                    <% } else { %>
+                      <%= item.name %>
+                    <% } %>
+                  </h4>
+                  <p class="cart-item-price">$<%= item.price.toFixed(2) %> each</p>
+                </div>
+              </div>
+              
+              <!-- Quantity Controls -->
+              <div class="quantity-controls">
+                <button class="quantity-btn" data-action="decrease" data-item-id="<%= item._id %>">
+                  -
+                </button>
+                <input type="number" class="quantity-input" 
+                       value="<%= item.quantity %>" min="1" max="99" 
+                       data-item-id="<%= item._id %>">
+                <button class="quantity-btn" data-action="increase" data-item-id="<%= item._id %>">
+                  +
+                </button>
+              </div>
+              
+              <!-- Subtotal & Remove -->
+              <div class="cart-item-actions">
+                <span class="item-subtotal">$<%= item.subtotal.toFixed(2) %></span>
+                <button class="remove-item-btn" data-item-id="<%= item._id %>">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      
+      <!-- Cart Summary -->
+      <div class="cart-summary">
+        <div class="cart-summary-content">
+          <h3>Order Summary</h3>
+          <div class="summary-line">
+            <span>Items (<span id="cart-item-count"><%= cart.totalItems %></span>):</span>
+            <span id="cart-subtotal">$<%= cart.totalPrice.toFixed(2) %></span>
+          </div>
+          <div class="summary-line">
+            <span>Shipping:</span>
+            <span class="free-shipping">FREE</span>
+          </div>
+          <div class="summary-line total-line">
+            <strong>Total: <span id="cart-total">$<%= cart.totalPrice.toFixed(2) %></span></strong>
+          </div>
+          
+          <div class="cart-actions">
+            <a href="/checkout" class="checkout-btn">
+              🔒 Proceed to Checkout
+            </a>
+            <button class="clear-cart-btn" id="clear-cart-btn">
+              🗑️ Clear Cart
+            </button>
+          </div>
+        </div>
+        
+        <!-- Savings Badge -->
+        <div class="savings-badge">
+          🎁 <strong>Free Shipping!</strong> On all orders over $25
+        </div>
+      </div>
+      
+      <!-- Continue Shopping -->
+      <div class="continue-shopping">
+        <a href="/products" class="secondary-button">
+          ← Continue Shopping
+        </a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>
