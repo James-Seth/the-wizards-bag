@@ -1,6 +1,7 @@
-<% const body = `
+<%- include('layouts/main', {title: title}) %>
+
 <div class="hero">
-    <h1>Welcome to Kevin's Deck Boxes</h1>
+    <h1>Welcome to A Wizards Haven</h1>
     <p>Premium custom deck boxes, tokens, and TTRPG accessories</p>
     <a href="/products" class="cta-button">Shop Now</a>
 </div>
@@ -25,5 +26,5 @@
         </div>
     </div>
 </section>
-`; %>
-<%- include('layouts/main', { title, body }) %>
+
+<%- include('layouts/footer') %>

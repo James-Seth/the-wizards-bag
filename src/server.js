@@ -1,21 +1,23 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config();
+
+// Load configuration
+const connectDB = require('../config/database');
+const appConfig = require('../config/app');
+const { requestLogger, errorLogger } = require('../utils/logger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kevins-deck-boxes')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+connectDB();
 
 // Set view engine
-app.set('view engine', 'ejs');
+app.set('view engine', appConfig.views.engine);
 app.set('views', path.join(__dirname, '../views'));
 
 // Middleware
+app.use(requestLogger); // Log requests
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,7 +28,7 @@ app.use('/products', productRoutes);
 
 // Home route
 app.get('/', (req, res) => {
-  res.render('index', { title: 'Kevin\'s Deck Boxes' });
+  res.render('index', { title: 'A Wizards Bag' });
 });
 
 app.get('/health', (req, res) => {
@@ -34,6 +36,8 @@ app.get('/health', (req, res) => {
 });
 
 // Error handling
+app.use(errorLogger); // Log errors
+
 app.use((req, res) => {
   res.status(404).render('error', { 
     error: 'Page not found', 
@@ -43,4 +47,5 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Local: http://localhost:${PORT}`);
 });

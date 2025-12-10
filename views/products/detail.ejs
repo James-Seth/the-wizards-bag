@@ -1,41 +1,73 @@
-<% const body = `
-<div class="product-detail">
-    <div class="product-detail-grid">
-        <div class="product-image">
-            <img src="${product.image}" alt="${product.name}">
-        </div>
-        <div class="product-info">
-            <h1>${product.name}</h1>
-            <p class="price">$${product.price.toFixed(2)}</p>
-            <p class="category">Category: ${product.category.replace('-', ' ')}</p>
-            
-            <div class="description">
-                <h3>Description</h3>
-                <p>${product.description}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | A Wizards Bag</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="/" class="logo">A Wizards Bag</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/products">Products</a></li>
+                    <li><a href="/products?category=deck-boxes">Deck Boxes</a></li>
+                    <li><a href="/products?category=tokens">Tokens</a></li>
+                    <li><a href="/products?category=accessories">Accessories</a></li>
+                </ul>
             </div>
+        </nav>
+    </header>
 
-            ${product.features && product.features.length > 0 ? `
-                <div class="features">
-                    <h3>Features</h3>
-                    <ul>
-                        ${product.features.map(feature => `<li>${feature}</li>`).join('')}
-                    </ul>
+    <main>
+        <div class="product-detail">
+            <div class="product-detail-grid">
+                <div class="product-image">
+                    <img src="<%= product.image %>" alt="<%= product.name %>">
                 </div>
-            ` : ''}
+                <div class="product-info">
+                    <h1><%= product.name %></h1>
+                    <p class="price">$<%= product.price.toFixed(2) %></p>
+                    <p class="category">Category: <%= product.category.replace('-', ' ') %></p>
+                    
+                    <div class="description">
+                        <h3>Description</h3>
+                        <p><%= product.description %></p>
+                    </div>
 
-            <div class="stock-info">
-                ${product.inStock ? 
-                    `<p class="in-stock">✓ In Stock (${product.inventory} available)</p>` : 
-                    `<p class="out-of-stock">✗ Out of Stock</p>`
-                }
-            </div>
+                    <% if (product.features && product.features.length > 0) { %>
+                        <div class="features">
+                            <h3>Features</h3>
+                            <ul>
+                                <% product.features.forEach(feature => { %>
+                                    <li><%= feature %></li>
+                                <% }); %>
+                            </ul>
+                        </div>
+                    <% } %>
 
-            <div class="actions">
-                <button class="add-to-cart-btn" disabled>Add to Cart (Coming in Phase 2)</button>
-                <a href="/products" class="back-btn">← Back to Products</a>
+                    <div class="stock-info">
+                        <% if (product.inStock) { %>
+                            <p class="in-stock">✓ In Stock (<%= product.inventory %> available)</p>
+                        <% } else { %>
+                            <p class="out-of-stock">✗ Out of Stock</p>
+                        <% } %>
+                    </div>
+
+                    <div class="actions">
+                        <button class="add-to-cart-btn" disabled>Add to Cart (Coming in Phase 2)</button>
+                        <a href="/products" class="back-btn">← Back to Products</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-`; %>
-<%- include('../layouts/main', { title, body }) %>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 A Wizards Bag. All rights reserved.</p>
+    </footer>
+</body>
+</html>

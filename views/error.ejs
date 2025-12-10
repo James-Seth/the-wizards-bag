@@ -1,7 +1,8 @@
-<% const body = `
+<%- include('layouts/main', {title: title}) %>
+
 <div class="error-container">
     <h1>Oops! Something went wrong</h1>
-    <p class="error-message">${error}</p>
+    <p class="error-message"><%= error %></p>
     <a href="/" class="home-btn">← Back to Home</a>
 </div>
 
@@ -38,5 +39,5 @@
     background: #2980b9;
 }
 </style>
-`; %>
-<%- include('layouts/main', { title, body }) %>
+
+<%- include('layouts/footer') %>

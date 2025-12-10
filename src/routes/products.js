@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const { 
+  validateProductId, 
+  validateCategoryQuery, 
+  validateSearch,
+  validateProduct
+} = require('../../middleware/validation');
 
 // GET all products
-router.get('/', async (req, res) => {
+router.get('/', validateCategoryQuery, async (req, res) => {
   try {
     const { category } = req.query;
     const filter = category ? { category } : {};
@@ -22,7 +28,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET single product
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateProductId, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -37,6 +43,52 @@ router.get('/:id', async (req, res) => {
       error: 'Failed to load product',
       title: 'Error'
     });
+  }
+});
+
+// POST create new product (for future admin functionality)
+router.post('/', validateProduct, async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    await product.save();
+    res.status(201).json({ 
+      message: 'Product created successfully', 
+      product 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Failed to create product' 
+    });
+  }
+});
+
+// PUT update product (for future admin functionality)
+router.put('/:id', validateProductId, validateProduct, async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true, runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ message: 'Product updated successfully', product });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update product' });
+  }
+});
+
+// DELETE product (for future admin functionality)
+router.delete('/:id', validateProductId, async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete product' });
   }
 });
 
