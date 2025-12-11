@@ -78,7 +78,21 @@
                         <h3><%= product.name %></h3>
                         <p class="price">$<%= product.price.toFixed(2) %></p>
                         <p class="description"><%= product.description.substring(0, 100) %>...</p>
-                        <a href="/products/<%= product._id %>" class="view-btn">View Details</a>
+                        
+                        <div class="card-actions">
+                            <a href="/products/<%= product._id %>" class="btn btn-outline-primary btn-sm">View Details</a>
+                            <% if (product.inventory > 0) { %>
+                                <button class="btn btn-success btn-sm" 
+                                        onclick="handleQuickAddToCart('<%= product._id %>')">
+                                    <i class="fas fa-cart-plus me-1"></i>
+                                    Add to Cart
+                                </button>
+                            <% } else { %>
+                                <button class="btn btn-secondary btn-sm" disabled>
+                                    Out of Stock
+                                </button>
+                            <% } %>
+                        </div>
                     </div>
                 <% }); %>
             <% } %>
@@ -91,5 +105,24 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/main.js"></script>
+    <script src="/js/cart.js"></script>
+    <script>
+    // Handle quick add to cart from product listing
+    function handleQuickAddToCart(productId) {
+        if (window.CartManager) {
+            window.CartManager.addToCart(productId, 1);
+        } else {
+            console.error('Cart functionality not loaded');
+            alert('Cart functionality is not available at this time.');
+        }
+    }
+    
+    // Update cart count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.CartManager) {
+            window.CartManager.updateCartCount();
+        }
+    });
+    </script>
 </body>
 </html>
