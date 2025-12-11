@@ -20,25 +20,21 @@
       <!-- Cart Items -->
       <div class="cart-items">
         <% cart.items.forEach(item => { %>
-          <div class="cart-item" data-item-id="<%= item._id %>">
+          <div class="cart-item" data-product-id="<%= item.productId %>">
             <div class="cart-item-content">
               <!-- Product Info -->
               <div class="cart-item-info">
-                <% if (item.productId && item.productId.image) { %>
-                  <img src="<%= item.productId.image %>" alt="<%= item.name %>" 
+                <% if (item.image) { %>
+                  <img src="<%= item.image %>" alt="<%= item.name %>" 
                        class="cart-item-image">
                 <% } else { %>
                   <div class="cart-item-placeholder">📦</div>
                 <% } %>
                 <div class="cart-item-details">
                   <h4>
-                    <% if (item.productId) { %>
-                      <a href="/products/<%= item.productId._id %>">
-                        <%= item.name %>
-                      </a>
-                    <% } else { %>
+                    <a href="/products/<%= item.productId %>">
                       <%= item.name %>
-                    <% } %>
+                    </a>
                   </h4>
                   <p class="cart-item-price">$<%= item.price.toFixed(2) %> each</p>
                 </div>
@@ -46,13 +42,13 @@
               
               <!-- Quantity Controls -->
               <div class="quantity-controls">
-                <button class="quantity-btn" data-action="decrease" data-item-id="<%= item._id %>">
+                <button class="quantity-btn decrease-qty" data-product-id="<%= item.productId %>">
                   -
                 </button>
                 <input type="number" class="quantity-input" 
                        value="<%= item.quantity %>" min="1" max="99" 
-                       data-item-id="<%= item._id %>">
-                <button class="quantity-btn" data-action="increase" data-item-id="<%= item._id %>">
+                       data-product-id="<%= item.productId %>">
+                <button class="quantity-btn increase-qty" data-product-id="<%= item.productId %>">
                   +
                 </button>
               </div>
@@ -60,7 +56,7 @@
               <!-- Subtotal & Remove -->
               <div class="cart-item-actions">
                 <span class="item-subtotal">$<%= item.subtotal.toFixed(2) %></span>
-                <button class="remove-item-btn" data-item-id="<%= item._id %>">
+                <button class="remove-item-btn" data-product-id="<%= item.productId %>" title="Remove item">
                   🗑️
                 </button>
               </div>

@@ -1,3 +1,7 @@
+// This file is deprecated and not used in the current session-based cart implementation.
+// All cart logic is handled in middleware/cart.js and session storage.
+// You can safely delete this file if you are not planning to use a database cart model.
+
 const mongoose = require('mongoose');
 
 // Cart Item Schema - individual items in the cart

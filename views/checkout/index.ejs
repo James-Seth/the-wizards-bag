@@ -1,0 +1,93 @@
+<%- include('../layouts/header', { title: 'Checkout' }) %>
+
+<div class="container my-5">
+    <h1 class="mb-4">Checkout</h1>
+    <% if (messages && messages.error) { %>
+        <div class="alert alert-danger"><%= messages.error %></div>
+    <% } %>
+    <form action="/checkout" method="POST" class="row g-4">
+        <div class="col-md-6">
+            <h4>Customer Information</h4>
+            <div class="mb-3">
+                <label for="customer-name" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="customer-name" name="customer[name]" required maxlength="100">
+            </div>
+            <div class="mb-3">
+                <label for="customer-email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="customer-email" name="customer[email]" required maxlength="100">
+            </div>
+            <div class="mb-3">
+                <label for="customer-phone" class="form-label">Phone</label>
+                <input type="tel" class="form-control" id="customer-phone" name="customer[phone]" required maxlength="20">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h4>Shipping Address</h4>
+            <div class="mb-3">
+                <label for="address-street" class="form-label">Street</label>
+                <input type="text" class="form-control" id="address-street" name="shippingAddress[street]" required maxlength="255">
+            </div>
+            <div class="mb-3">
+                <label for="address-city" class="form-label">City</label>
+                <input type="text" class="form-control" id="address-city" name="shippingAddress[city]" required maxlength="100">
+            </div>
+            <div class="mb-3">
+                <label for="address-state" class="form-label">State</label>
+                <input type="text" class="form-control" id="address-state" name="shippingAddress[state]" required maxlength="100">
+            </div>
+            <div class="mb-3">
+                <label for="address-zip" class="form-label">ZIP Code</label>
+                <input type="text" class="form-control" id="address-zip" name="shippingAddress[zipCode]" required maxlength="10">
+            </div>
+            <div class="mb-3">
+                <label for="address-country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="address-country" name="shippingAddress[country]" value="United States" required maxlength="100">
+            </div>
+        </div>
+        <div class="col-12">
+            <h4>Order Summary</h4>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <ul class="list-group mb-3">
+                        <% cartSummary.items.forEach(function(item) { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong><%= item.name %></strong> <span class="text-muted">x <%= item.quantity %></span>
+                                </div>
+                                <span>$<%= (item.price * item.quantity).toFixed(2) %></span>
+                            </li>
+                        <% }) %>
+                    </ul>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>$<%= totals.subtotal.toFixed(2) %></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax:</span>
+                        <span>$<%= totals.tax.toFixed(2) %></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Shipping:</span>
+                        <span>$<%= totals.shipping.toFixed(2) %></span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Total:</span>
+                        <span>$<%= totals.total.toFixed(2) %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="mb-3">
+                <label for="order-notes" class="form-label">Order Notes (optional)</label>
+                <textarea class="form-control" id="order-notes" name="notes" rows="2" maxlength="500"></textarea>
+            </div>
+        </div>
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-success btn-lg">Place Order</button>
+        </div>
+    </form>
+</div>
+
+<%- include('../layouts/footer') %>

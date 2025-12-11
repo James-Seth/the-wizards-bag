@@ -1,11 +1,13 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const flash = require('connect-flash');
 
 // Load configuration
 const connectDB = require('../config/database');
 const appConfig = require('../config/app');
-const { requestLogger, errorLogger } = require('../utils/logger');
+const { requestLogger, errorLogger } = require('../utils/logger'); // Correct for src/server.js
+const { initializeCart } = require('../middleware/cart');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,16 +26,22 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
 }));
+app.use(flash()); // Use connect-flash after session middleware
 app.use(requestLogger); // Log requests
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize cart in session for all requests
+app.use(initializeCart);
+
 // Routes
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
+const checkoutRoutes = require('./routes/checkout');
 app.use('/products', productRoutes);
 app.use('/cart', cartRoutes);
+app.use('/checkout', checkoutRoutes);
 
 // Home route
 app.get('/', (req, res) => {

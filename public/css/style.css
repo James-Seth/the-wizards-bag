@@ -127,6 +127,19 @@
     transform: translateY(-1px);
 }
 
+/* Card actions for product listing */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1rem 1rem;
+    flex-wrap: wrap;
+}
+
+.card-actions .btn {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
 /* Custom quantity controls */
 .quantity-controls {
     display: flex;
