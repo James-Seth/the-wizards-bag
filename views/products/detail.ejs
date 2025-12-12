@@ -1,4 +1,4 @@
-<%- include('../layouts/header') %>
+<%- include('../layouts/main', {title: product.name}) %>
 
 <div class="container my-4">
     <div class="row">
@@ -34,10 +34,15 @@
                 <% } %>
                 
                 <div class="inventory mb-4">
-                    <% if (product.inventory > 0) { %>
+                    <% if (product.availableInventory > 0) { %>
                         <span class="badge bg-success">
                             <i class="fas fa-check me-1"></i>
-                            <%= product.inventory %> in stock
+                            <%= product.availableInventory %> available
+                        </span>
+                    <% } else if (product.inventory > 0) { %>
+                        <span class="badge bg-warning">
+                            <i class="fas fa-shopping-cart me-1"></i>
+                            In your cart
                         </span>
                     <% } else { %>
                         <span class="badge bg-danger">
@@ -47,7 +52,7 @@
                     <% } %>
                 </div>
                 
-                <% if (product.inventory > 0) { %>
+                <% if (product.availableInventory > 0) { %>
                 <div class="product-quantity-section">
                     <div class="quantity-row">
                         <div class="quantity-label-section">
@@ -58,7 +63,7 @@
                                 </button>
                                 <input type="number" class="quantity-input" 
                                        id="quantity-<%= product._id %>" 
-                                       value="1" min="1" max="<%= product.inventory %>">
+                                       value="1" min="1" max="<%= product.availableInventory %>">
                                 <button class="quantity-btn" data-action="increase" data-target="quantity-<%= product._id %>">
                                     +
                                 </button>
@@ -86,8 +91,6 @@
     </div>
 </div>
 
-<!-- Load cart functionality -->
-<script src="/js/cart.js"></script>
 <script>
 // Handle Add to Cart functionality
 function handleAddToCart(productId) {
@@ -127,5 +130,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<%- include('../layouts/footer') %>

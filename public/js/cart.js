@@ -13,6 +13,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+/**
+ * Refresh inventory displays on product pages after cart changes
+ */
+function refreshInventoryDisplays() {
+    // Check if we're on a product page
+    const isProductPage = window.location.pathname.includes('/products');
+    
+    if (isProductPage) {
+        // Reload the page to get updated inventory
+        // In a more sophisticated implementation, you could make an AJAX request
+        // to get just the inventory updates without full page reload
+        setTimeout(() => {
+            window.location.reload();
+        }, 500); // Small delay to ensure cart update completed
+    }
+}
+
 function initializeCartSystem() {
     // Cart interaction elements
     const quantityInputs = document.querySelectorAll('.quantity-input');
@@ -335,6 +352,9 @@ window.CartManager = {
                 
                 // Add cart icon bounce animation
                 this.animateCartIcon();
+                
+                // Refresh inventory displays on product pages
+                refreshInventoryDisplays();
                 
                 return data;
             } else {

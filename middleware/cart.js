@@ -19,9 +19,15 @@ const initializeCart = (req, res, next) => {
                 items: [],
                 totalItems: 0,
                 totalPrice: 0,
+                reservedInventory: {}, // Track reserved quantities per product
                 lastUpdated: new Date()
             };
             logger.info('Cart initialized for session', { sessionId: req.sessionID });
+        }
+        
+        // Ensure reservedInventory exists for existing carts
+        if (!req.session.cart.reservedInventory) {
+            req.session.cart.reservedInventory = {};
         }
 
         // Make cart available in all templates
@@ -88,6 +94,9 @@ const addToCart = (cart, product, quantity = 1) => {
             existingItem.quantity += quantity;
             existingItem.subtotal = parseFloat((existingItem.price * existingItem.quantity).toFixed(2));
             
+            // Update reserved inventory
+            cart.reservedInventory[product._id.toString()] = existingItem.quantity;
+            
             logger.info('Updated cart item quantity', {
                 productId: product._id,
                 newQuantity: existingItem.quantity
@@ -104,6 +113,9 @@ const addToCart = (cart, product, quantity = 1) => {
             };
 
             cart.items.push(cartItem);
+            
+            // Track reserved inventory
+            cart.reservedInventory[product._id.toString()] = quantity;
             
             logger.info('Added new item to cart', {
                 productId: product._id,
@@ -135,11 +147,15 @@ const updateCartItem = (cart, productId, newQuantity) => {
         if (newQuantity <= 0) {
             // Remove item if quantity is 0 or negative
             cart.items = cart.items.filter(item => item.productId !== productId);
+            // Remove from reserved inventory
+            delete cart.reservedInventory[productId];
             logger.info('Removed item from cart (quantity <= 0)', { productId });
         } else {
             // Update quantity
             item.quantity = newQuantity;
             item.subtotal = parseFloat((item.price * newQuantity).toFixed(2));
+            // Update reserved inventory
+            cart.reservedInventory[productId] = newQuantity;
             logger.info('Updated cart item quantity', { productId, newQuantity });
         }
 
@@ -164,6 +180,9 @@ const removeFromCart = (cart, productId) => {
             throw new Error('Item not found in cart');
         }
 
+        // Remove from reserved inventory
+        delete cart.reservedInventory[productId];
+        
         logger.info('Removed item from cart', { productId });
         return calculateCartTotals(cart);
     } catch (error) {
@@ -181,6 +200,7 @@ const clearCart = (cart) => {
         cart.items = [];
         cart.totalItems = 0;
         cart.totalPrice = 0;
+        cart.reservedInventory = {}; // Clear reserved inventory
         cart.lastUpdated = new Date();
 
         logger.info('Cart cleared');
@@ -205,6 +225,17 @@ const getCartSummary = (cart) => {
     };
 };
 
+/**
+ * Calculate available inventory for a product (total - reserved in this session)
+ * @param {Object} product - Product object from database
+ * @param {Object} cart - Cart object from session
+ * @returns {Number} Available inventory for this session
+ */
+const getAvailableInventory = (product, cart) => {
+    const reservedQty = cart.reservedInventory[product._id.toString()] || 0;
+    return Math.max(0, product.inventory - reservedQty);
+};
+
 module.exports = {
     initializeCart,
     calculateCartTotals,
@@ -213,5 +244,6 @@ module.exports = {
     updateCartItem,
     removeFromCart,
     clearCart,
-    getCartSummary
+    getCartSummary,
+    getAvailableInventory
 };

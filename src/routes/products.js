@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const { getAvailableInventory } = require('../../middleware/cart');
 const { 
   validateProductId, 
   validateCategoryQuery, 
@@ -14,8 +15,18 @@ router.get('/', validateCategoryQuery, async (req, res) => {
     const { category } = req.query;
     const filter = category ? { category } : {};
     const products = await Product.find(filter);
+    
+    // Calculate available inventory for each product
+    const productsWithAvailability = products.map(product => {
+      const availableInventory = getAvailableInventory(product, req.session.cart);
+      return {
+        ...product.toObject(),
+        availableInventory
+      };
+    });
+    
     res.render('products/index', { 
-      products, 
+      products: productsWithAvailability, 
       selectedCategory: category || 'all',
       title: 'Product Catalog'
     });
@@ -37,7 +48,18 @@ router.get('/:id', validateProductId, async (req, res) => {
         title: 'Product Not Found'
       });
     }
-    res.render('products/detail', { product, title: product.name });
+    
+    // Calculate available inventory
+    const availableInventory = getAvailableInventory(product, req.session.cart);
+    const productWithAvailability = {
+      ...product.toObject(),
+      availableInventory
+    };
+    
+    res.render('products/detail', { 
+      product: productWithAvailability, 
+      title: product.name 
+    });
   } catch (error) {
     res.status(500).render('error', { 
       error: 'Failed to load product',
