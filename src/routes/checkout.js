@@ -5,12 +5,13 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { getCartSummary } = require('../../middleware/cart');
 const { logger } = require('../../utils/logger');
+const { requireAuth } = require('../middleware/auth');
 
 /**
  * GET /checkout
  * Display checkout form
  */
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
     try {
         // Check if cart exists and has items
         if (!req.session.cart || !req.session.cart.items || req.session.cart.items.length === 0) {
@@ -74,7 +75,7 @@ router.get('/', async (req, res) => {
  * POST /checkout
  * Process order
  */
-router.post('/', [
+router.post('/', requireAuth, [
     // Validation middleware
     body('customer.name')
         .trim()

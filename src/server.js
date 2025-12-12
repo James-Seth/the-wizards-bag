@@ -8,6 +8,7 @@ const connectDB = require('../config/database');
 const appConfig = require('../config/app');
 const { requestLogger, errorLogger } = require('../utils/logger'); // Correct for src/server.js
 const { initializeCart } = require('../middleware/cart');
+const { setLocals } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,13 +36,18 @@ app.use(express.urlencoded({ extended: true }));
 // Initialize cart in session for all requests
 app.use(initializeCart);
 
+// Make user available in all templates
+app.use(setLocals);
+
 // Routes
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
 const checkoutRoutes = require('./routes/checkout');
+const authRoutes = require('./routes/auth');
 app.use('/products', productRoutes);
 app.use('/cart', cartRoutes);
 app.use('/checkout', checkoutRoutes);
+app.use('/auth', authRoutes);
 
 // Home route
 app.get('/', (req, res) => {
