@@ -27,7 +27,7 @@ const getDatabaseConfig = () => {
     },
     
     production: {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/kevins-deck-boxes-prod',
+      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/the-wizards-bag-prod',
       options: {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
@@ -38,7 +38,7 @@ const getDatabaseConfig = () => {
     },
     
     test: {
-      uri: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/kevins-deck-boxes-test',
+      uri: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/the-wizards-bag-test',
       options: {
         maxPoolSize: 5,
         serverSelectionTimeoutMS: 5000,

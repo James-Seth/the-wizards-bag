@@ -1,7 +1,7 @@
 # API Documentation
 
 ## Overview
-Kevin's Deck Boxes API provides endpoints for managing products in an e-commerce application for deck boxes and TTRPG accessories.
+The Wizard's Bag API provides endpoints for managing products in an e-commerce application for deck boxes and TTRPG accessories.
 
 ## Base URL
 ```

@@ -128,7 +128,7 @@ The application uses Express Validator for input validation:
 
 - `npm start` - Start production server
 - `npm run dev` - Start development server with nodemon
-- `npm run seed` - Seed database with sample products
+- `npm run seed` - Seed database with sample products for testing
 
 ## Technologies Used
 
@@ -148,20 +148,21 @@ The application uses Express Validator for input validation:
 ## Future Updates:
 
 ### Phase 1: Shopping Cart System (In Development - December 2025)
-- **Shopping Cart Functionality** - Add/remove/update items with AJAX
-- **Session-based Persistence** - Cart survives page refreshes and navigation
-- **Real-time Cart Management** - Live totals and quantity updates
-- **Mobile-Optimized Cart** - Touch-friendly controls and responsive design
-- **Checkout Foundation** - Customer information and order summary
-- **Enhanced UX** - Loading states, success/error messaging
-- **Cart Validation** - Stock checking and quantity limits
+-- Completed 0--
+   (- **Shopping Cart Functionality** - Add/remove/update items with AJAX
+   - **Session-based Persistence** - Cart survives page refreshes and navigation
+   - **Real-time Cart Management** - Live totals and quantity updates
+   - **Mobile-Optimized Cart** - Touch-friendly controls and responsive design
+   - **Checkout Foundation** - Customer information and order summary
+   - **Enhanced UX** - Loading states, success/error messaging
+   - **Cart Validation** - Stock checking and quantity limits)
 
 ### Phase 2: User Authentication & Admin
 - **User Registration/Login** - Account creation and authentication
 - **Admin Panel** - Product management dashboard (CRUD operations)
-- **User Roles** - Admin vs customer permissions
-- **Order History** - Track purchases and order status
-- **Inventory Management** - Real-time stock updates
+- **User Roles** - Admin vs customer permissions - (Work in Progress)
+- **Order History** - Track purchases and order status - (Work in Progress)
+- **Inventory Management** - Real-time stock updates (Completed)
 
 ### Phase 3: Advanced E-commerce
 - **Payment Integration** - Stripe/PayPal processing (This will be in the docs as a how to because you need a paypal business account for the api key required in the app)
