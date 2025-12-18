@@ -1,5 +1,5 @@
 {
-  "name": "a-wizards-bag",
+  "name": "the-wizards-bag",
   "version": "1.0.0",
   "description": "E-commerce deck boxes and TTRPG accessories",
   "main": "src/server.js",

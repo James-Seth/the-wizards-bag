@@ -10,7 +10,7 @@
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd kevins-deck-boxes
+   cd the-wizards-bag
    ```
 
 2. **Install dependencies:**
@@ -25,7 +25,7 @@
    
    Edit `.env` with your configuration:
    ```env
-   MONGODB_URI=mongodb://localhost:27017/kevins-deck-boxes
+   MONGODB_URI=mongodb://localhost:27017/the-wizards-bag
    PORT=3001
    NODE_ENV=production
    SESSION_SECRET=your-secure-session-secret
@@ -67,7 +67,7 @@
 2. **Deploy the application:**
    ```bash
    git clone <repository-url>
-   cd kevins-deck-boxes
+   cd the-wizards-bag
    npm install --production
    ```
 
@@ -80,7 +80,7 @@
 4. **Use PM2 for process management:**
    ```bash
    npm install -g pm2
-   pm2 start src/server.js --name "kevins-deck-boxes"
+   pm2 start src/server.js --name "the-wizards-bag"
    pm2 startup
    pm2 save
    ```
@@ -106,12 +106,12 @@
 
 1. **Create Heroku app:**
    ```bash
-   heroku create kevins-deck-boxes
+   heroku create the-wizards-bag
    ```
 
 2. **Set environment variables:**
    ```bash
-   heroku config:set MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kevins-deck-boxes
+   heroku config:set MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/the-wizards-bag
    heroku config:set NODE_ENV=production
    heroku config:set SESSION_SECRET=your-secure-secret
    ```
@@ -141,8 +141,8 @@
 
 2. **Build and run:**
    ```bash
-   docker build -t kevins-deck-boxes .
-   docker run -p 3001:3001 --env-file .env kevins-deck-boxes
+   docker build -t the-wizards-bag .
+   docker run -p 3001:3001 --env-file .env the-wizards-bag
    ```
 
 ## Database Setup
@@ -154,7 +154,7 @@ mongod --dbpath /path/to/data/directory
 
 # Create database and user (optional)
 mongo
-use kevins-deck-boxes
+use the-wizards-bag
 db.createUser({
   user: "app_user",
   pwd: "secure_password",
@@ -183,7 +183,7 @@ db.createUser({
 
 1. **Application logs:**
    ```bash
-   pm2 logs kevins-deck-boxes
+   pm2 logs the-wizards-bag
    ```
 
 2. **Monitor performance:**
@@ -201,7 +201,7 @@ db.createUser({
 1. **Database backup:**
    ```bash
    # MongoDB backup
-   mongodump --uri="mongodb://localhost:27017/kevins-deck-boxes" --out=/backup/$(date +%Y%m%d)
+   mongodump --uri="mongodb://localhost:27017/the-wizards-bag" --out=/backup/$(date +%Y%m%d)
    ```
 
 2. **Automated backup script:**
@@ -215,7 +215,7 @@ db.createUser({
 
 **Common issues:**
 - Port already in use: Check running processes with `netstat -tulpn | grep :3001`
-- MongoDB connection: Verify connection string and database permissions
+- MongoDB connection: Verify connection string, IP address and database permissions
 - Permission errors: Check file permissions and user privileges
 - Memory issues: Monitor with `htop` or `pm2 monit`
 
