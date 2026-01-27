@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const { logger } = require('../../utils/logger');
 const { requireAuth, requireGuest } = require('../middleware/auth');
+const { rateLimiters, validateInput, logSecurityEvent } = require('../middleware/security');
 const router = express.Router();
 
 // GET /auth/signup - Show signup form
@@ -14,9 +15,13 @@ router.get('/signup', (req, res) => {
 });
 
 // POST /auth/signup - Handle signup
-router.post('/signup', async (req, res) => {
+router.post('/signup', rateLimiters.auth, async (req, res) => {
     try {
-        const { name, email, password, confirmPassword } = req.body;
+        let { name, email, password, confirmPassword } = req.body;
+        
+        // Sanitize inputs
+        name = validateInput.sanitizeString(name, 50);
+        email = validateInput.sanitizeString(email, 100).toLowerCase();
         
         // Validate inputs
         const errors = [];
@@ -25,7 +30,7 @@ router.post('/signup', async (req, res) => {
             errors.push('Name must be at least 2 characters long');
         }
         
-        if (!email || !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        if (!email || !validateInput.isValidEmail(email)) {
             errors.push('Please enter a valid email address');
         }
         
@@ -38,13 +43,15 @@ router.post('/signup', async (req, res) => {
         }
         
         if (errors.length > 0) {
+            logSecurityEvent('SIGNUP_VALIDATION_FAILED', req, { errors });
             req.flash('error', errors);
             return res.redirect('/auth/signup');
         }
         
         // Check if user already exists
-        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
+            logSecurityEvent('SIGNUP_DUPLICATE_EMAIL', req, { email });
             req.flash('error', 'An account with this email already exists');
             return res.redirect('/auth/signup');
         }
@@ -79,19 +86,30 @@ router.get('/login', (req, res) => {
 });
 
 // POST /auth/login - Handle login
-router.post('/login', async (req, res) => {
+router.post('/login', rateLimiters.auth, async (req, res) => {
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        
+        // Sanitize inputs
+        email = validateInput.sanitizeString(email, 100).toLowerCase();
         
         // Validate inputs
         if (!email || !password) {
+            logSecurityEvent('LOGIN_MISSING_CREDENTIALS', req);
             req.flash('error', 'Email and password are required');
             return res.redirect('/auth/login');
         }
         
+        if (!validateInput.isValidEmail(email)) {
+            logSecurityEvent('LOGIN_INVALID_EMAIL', req, { email });
+            req.flash('error', 'Please enter a valid email address');
+            return res.redirect('/auth/login');
+        }
+        
         // Find user
-        const user = await User.findOne({ email: email.toLowerCase(), isActive: true });
+        const user = await User.findOne({ email, isActive: true });
         if (!user) {
+            logSecurityEvent('LOGIN_USER_NOT_FOUND', req, { email });
             req.flash('error', 'Invalid email or password');
             return res.redirect('/auth/login');
         }
@@ -99,6 +117,7 @@ router.post('/login', async (req, res) => {
         // Check password
         const isValidPassword = await user.comparePassword(password);
         if (!isValidPassword) {
+            logSecurityEvent('LOGIN_INVALID_PASSWORD', req, { email, userId: user._id });
             req.flash('error', 'Invalid email or password');
             return res.redirect('/auth/login');
         }

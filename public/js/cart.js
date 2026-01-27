@@ -22,8 +22,6 @@ function refreshInventoryDisplays() {
     
     if (isProductPage) {
         // Reload the page to get updated inventory
-        // In a more sophisticated implementation, you could make an AJAX request
-        // to get just the inventory updates without full page reload
         setTimeout(() => {
             window.location.reload();
         }, 500); // Small delay to ensure cart update completed
@@ -112,7 +110,7 @@ function initializeCartSystem() {
     }
 
     /**
-     * Update item quantity
+     * Update quantity in cart
      */
     function updateQuantity(productId, newQuantity, button) {
         setButtonLoading(button, true);
@@ -127,26 +125,7 @@ function initializeCartSystem() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                if (newQuantity === 0) {
-                    // Remove item from display
-                    const cartItem = document.querySelector(`[data-product-id="${productId}"]`);
-                    if (cartItem) {
-                        cartItem.remove();
-                    }
-                } else {
-                    // Update item subtotal
-                    const cartItem = document.querySelector(`[data-product-id="${productId}"]`);
-                    if (cartItem) {
-                        const item = data.cart.items.find(item => item.productId === productId);
-                        if (item) {
-                            const subtotalElement = cartItem.querySelector('.item-subtotal');
-                            if (subtotalElement) {
-                                subtotalElement.textContent = `$${item.subtotal.toFixed(2)}`;
-                            }
-                        }
-                    }
-                }
-                
+                showMessage(data.message, 'success');
                 updateCartDisplay(data.cart);
 
                 // Reload page if cart is empty
@@ -198,8 +177,8 @@ function initializeCartSystem() {
                     }, 300);
                 }
                 
-                updateCartDisplay(data.cart);
                 showMessage(data.message, 'success');
+                updateCartDisplay(data.cart);
 
                 // Reload page if cart is empty
                 if (data.cart.totalItems === 0) {
@@ -224,7 +203,7 @@ function initializeCartSystem() {
      * Clear entire cart
      */
     function clearCart() {
-        if (!confirm('Are you sure you want to clear your entire cart?')) {
+        if (!confirm('Remove all items from your cart?')) {
             return;
         }
 
@@ -240,6 +219,8 @@ function initializeCartSystem() {
         .then(data => {
             if (data.success) {
                 showMessage(data.message, 'success');
+                
+                // Reload page after short delay
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
@@ -323,28 +304,42 @@ window.CartManager = {
      * Add item to cart from product page
      */
     addToCart: function(productId, quantity = 1) {
+        console.log('🛒 CartManager.addToCart called:', { productId, quantity });
+        
         const button = document.querySelector(`[data-product-id="${productId}"]`) || 
                       document.querySelector('.add-to-cart-btn');
+        
+        console.log('🔍 Found button:', button);
         
         if (button) {
             button.disabled = true;
             button.textContent = 'Adding...';
         }
 
+        const requestData = { 
+            id: productId, 
+            quantity: quantity 
+        };
+        
+        console.log('📤 Sending request to /cart/add:', requestData);
+
         return fetch('/cart/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                id: productId, 
-                quantity: quantity 
-            })
+            body: JSON.stringify(requestData)
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('📥 Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('📦 Response data:', data);
+            
             if (data.success) {
-                // Update navbar cart badge
+                // Update cart count
+                console.log('✅ Success! Updating cart count to:', data.cart.totalItems);
                 this.updateCartCount(data.cart.totalItems);
                 
                 // Show success message
@@ -358,12 +353,13 @@ window.CartManager = {
                 
                 return data;
             } else {
+                console.error('❌ Cart add failed:', data.message);
                 this.showMessage(data.message, 'error');
                 throw new Error(data.message);
             }
         })
         .catch(error => {
-            console.error('Error adding to cart:', error);
+            console.error('🚨 Error adding to cart:', error);
             this.showMessage('Error adding item to cart', 'error');
             throw error;
         })
@@ -379,13 +375,22 @@ window.CartManager = {
      * Update cart count in navbar
      */
     updateCartCount: function(count) {
+        console.log('🔢 updateCartCount called with:', count);
+        
         const cartBadge = document.getElementById('cart-count');
+        console.log('🎯 Found cart badge element:', cartBadge);
+        
         if (cartBadge) {
             cartBadge.textContent = count;
             cartBadge.style.display = count > 0 ? 'inline' : 'none';
+            
+            console.log('🎨 Updated badge - text:', cartBadge.textContent, 'display:', cartBadge.style.display);
+            
             // Add animation effect
             cartBadge.classList.add('cart-count');
             setTimeout(() => cartBadge.classList.remove('cart-count'), 600);
+        } else {
+            console.error('❌ Cart badge element not found! Looking for #cart-count');
         }
     },
 
@@ -406,7 +411,7 @@ window.CartManager = {
     },
 
     /**
-     * Show message notification
+     * Show success/error message
      */
     showMessage: function(message, type = 'success') {
         // Remove existing messages
@@ -453,13 +458,6 @@ window.CartManager = {
         }
     }
 };
-
-// Initialize cart count on page load
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.CartManager) {
-        window.CartManager.fetchCartCount();
-    }
-});
 
 // Add cart bounce animation CSS
 const style = document.createElement('style');
