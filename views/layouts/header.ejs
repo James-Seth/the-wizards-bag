@@ -11,47 +11,65 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-magic me-2"></i>
-                    The Wizard's Bag
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center justify-content-center w-100">
+                    <!-- Left Nav Links -->
+                    <ul class="navbar-nav flex-row me-3">
+                        <li class="nav-item mx-2">
                             <a class="nav-link" href="/">Home</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item mx-2">
                             <a class="nav-link" href="/products">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=deck-boxes">Deck Boxes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=tokens">Tokens</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=accessories">Accessories</a>
                         </li>
                     </ul>
                     
-                    <!-- Cart Icon -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" href="/cart" id="cart-link">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                      id="cart-count" style="display: none;">
-                                    0
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
+                    <!-- Center Logo -->
+                    <a class="navbar-brand p-0 m-0 mx-3" href="/">
+                        <img src="/images/logo.png" alt="Wizard's Bag Logo" style="height:60px;" />
+                    </a>
+                    
+                    <!-- Right Nav Links -->
+                    <ul class="navbar-nav flex-row ms-3">
+                            <li class="nav-item mx-2">
+                                <a class="nav-link" href="/products?category=deck-boxes">Deck Boxes</a>
+                            </li>
+                            <li class="nav-item mx-2">
+                                <a class="nav-link" href="/products?category=tokens">Tokens</a>
+                            </li>
+                            <li class="nav-item mx-2">
+                                <a class="nav-link" href="/products?category=accessories">Accessories</a>
+                            </li>
+                            <!-- Auth & Cart Links -->
+                            <% if (isLoggedIn) { %>
+                                <li class="nav-item dropdown mx-2">
+                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-user"></i> <%= user.name %>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                        <li><a class="dropdown-item" href="/auth/account"><i class="fas fa-user-circle me-2"></i>My Account</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                    </ul>
+                                </li>
+                            <% } else { %>
+                                <li class="nav-item mx-2">
+                                    <a class="nav-link" href="/auth/login">Login</a>
+                                </li>
+                                <li class="nav-item mx-2">
+                                    <a class="nav-link" href="/auth/signup">Sign Up</a>
+                                </li>
+                            <% } %>
+                            <li class="nav-item mx-2">
+                                <a class="nav-link position-relative" href="/cart" id="cart-link">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                          id="cart-count" style="display: none;">
+                                        0
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>

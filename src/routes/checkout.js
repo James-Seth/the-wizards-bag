@@ -6,6 +6,7 @@ const Product = require('../models/Product');
 const { getCartSummary } = require('../../middleware/cart');
 const { logger } = require('../../utils/logger');
 const { requireAuth } = require('../middleware/auth');
+const { rateLimiters, validateInput, logSecurityEvent } = require('../middleware/security');
 
 /**
  * GET /checkout
@@ -75,7 +76,7 @@ router.get('/', requireAuth, async (req, res) => {
  * POST /checkout
  * Process order
  */
-router.post('/', requireAuth, [
+router.post('/', rateLimiters.checkout, requireAuth, [
     // Validation middleware
     body('customer.name')
         .trim()

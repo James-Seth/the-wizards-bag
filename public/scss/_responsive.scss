@@ -1,0 +1,82 @@
+// ========================================
+// Responsive Design - Mobile First
+// ========================================
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Mobile responsive adjustments
+@include mobile {
+  .quantity-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $spacing-lg;
+  }
+  
+  .quantity-label-section {
+    align-items: center;
+  }
+  
+  .add-to-cart-section .checkout-btn {
+    max-width: none;
+  }
+  
+  .cart-item-actions {
+    justify-content: center;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+  
+  .products-header h1 {
+    font-size: $font-size-2xl;
+  }
+  
+  .hero h1 {
+    font-size: $font-size-2xl;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+    padding: 0 $spacing-md;
+  }
+
+  .navbar {
+    .container-fluid .row {
+      max-width: 100%;
+    }
+
+    .d-flex.justify-content-center {
+      margin: 0 $spacing-sm;
+    }
+  }
+
+  .cart-item {
+    .cart-item-details {
+      margin-left: $spacing-md;
+    }
+  }
+}
+
+// Tablet adjustments
+@include tablet-up {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+}
+
+// Desktop adjustments
+@include desktop-up {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    max-width: 1400px;
+  }
+
+  .container {
+    max-width: 1200px;
+  }
+}

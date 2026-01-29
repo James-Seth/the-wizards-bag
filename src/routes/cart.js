@@ -8,6 +8,7 @@ const router = express.Router();
 const Product = require('../models/Product');
 const { body, param, validationResult } = require('express-validator');
 const { logger } = require('../../utils/logger');
+const { rateLimiters, validateInput } = require('../middleware/security');
 const {
     addToCart,
     updateCartItem,
@@ -36,7 +37,7 @@ const updateCartValidation = [
  * POST /cart/add
  * Add item to cart using session storage
  */
-router.post('/add', addToCartValidation, async (req, res) => {
+router.post('/add', rateLimiters.cart, addToCartValidation, async (req, res) => {
     try {
         // Check validation errors
         const errors = validationResult(req);

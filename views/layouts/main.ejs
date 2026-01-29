@@ -9,79 +9,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-magic me-2"></i>
-                    The Wizard's Bag
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=deck-boxes">Deck Boxes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=tokens">Tokens</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products?category=accessories">Accessories</a>
-                        </li>
-                    </ul>
-                    
-                    <!-- Cart Icon & Auth -->
-                    <ul class="navbar-nav">
-                        <% if (isLoggedIn) { %>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user"></i> <%= user.name %>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/auth/account">My Account</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/auth/logout">Logout</a></li>
-                                </ul>
-                            </li>
-                        <% } else { %>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/auth/login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/auth/signup">Sign Up</a>
-                            </li>
-                        <% } %>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" href="/cart" id="cart-link">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                      id="cart-count" style="display: none;">
-                                    0
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <!-- Synthwave Background Scene -->
+    <div class="scene">
+      <div class="top">
+        <div class="startails">
+          <div class="startail-r"></div>
+          <div class="startail-l"></div>
+          <div class="startail-m"></div>
+        </div>
+        <div class="top-lines"></div>
+        <div class="brand">
+          <div class="triangle"></div>
+          <div class="kode-text"></div>
+        </div>
+        <div class="sun"></div>
+      </div>
+      <div class="bottom">
+        <div class="m0"></div>
+        <div class="m1"></div>
+        <div class="m2"></div>
+        <div class="bottom-overlay"></div>
+      </div>
+      <div id="stars"></div>
+    </div>
 
-    <main>
-
-    </main>
+    <%- include('header') %>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/cart.js"></script>
-</body>
-</html>
+    <main class="container my-4">

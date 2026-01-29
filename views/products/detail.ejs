@@ -71,8 +71,7 @@
                         </div>
                         <div class="add-to-cart-section">
                             <button class="checkout-btn add-to-cart-btn" 
-                                    data-product-id="<%= product._id %>"
-                                    onclick="handleAddToCart('<%= product._id %>')">
+                                    data-product-id="<%= product._id %>">
                                 🛒 Add to Cart
                             </button>
                         </div>
@@ -92,21 +91,32 @@
 </div>
 
 <script>
-// Handle Add to Cart functionality
-function handleAddToCart(productId) {
-    const quantityInput = document.getElementById(`quantity-${productId}`);
-    const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
-    
-    if (window.CartManager) {
-        window.CartManager.addToCart(productId, quantity);
-    } else {
-        console.error('Cart functionality not loaded');
-        alert('Cart functionality is not available at this time.');
-    }
-}
-
-// Handle quantity controls
+// Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle Add to Cart functionality
+    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+    
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default action
+            
+            const productId = this.getAttribute('data-product-id');
+            
+            const quantityInput = document.getElementById(`quantity-${productId}`);
+            const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+            
+            if (window.CartManager) {
+                window.CartManager.addToCart(productId, quantity);
+            } else {
+                console.error('❌ Cart functionality not loaded - window.CartManager not found');
+                alert('Cart functionality is not available at this time.');
+            }
+        });
+    } else {
+        console.error('❌ Add to cart button not found!');
+    }
+
+    // Handle quantity controls
     const quantityButtons = document.querySelectorAll('.quantity-btn');
     
     quantityButtons.forEach(button => {
@@ -130,3 +140,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<%- include('../layouts/footer') %>

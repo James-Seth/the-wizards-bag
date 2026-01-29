@@ -1,0 +1,104 @@
+// ========================================
+// SCSS Mixins - Reusable Patterns
+// ========================================
+
+@use 'variables' as *;
+
+// Flexbox utilities
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Card styling
+@mixin card-style($shadow: $shadow-md) {
+  border: none;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow;
+  background: $white;
+  overflow: hidden;
+}
+
+// Button styling
+@mixin button-style($bg-color: $primary-gradient-start, $text-color: $white) {
+  background: $bg-color;
+  color: $text-color;
+  border: none;
+  border-radius: $border-radius-sm;
+  padding: $spacing-md $spacing-2xl;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-fast;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+// Gradient background
+@mixin primary-gradient {
+  background: linear-gradient(135deg, $primary-gradient-start 0%, $primary-gradient-end 100%);
+}
+
+// Image styling
+@mixin cover-image($height: 200px) {
+  width: 100%;
+  height: $height;
+  object-fit: cover;
+}
+
+// Hover effects
+@mixin hover-lift {
+  transition: transform $transition-fast;
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@mixin hover-slide {
+  transition: all $transition-fast;
+  
+  &:hover {
+    transform: translateX(2px);
+  }
+}
+
+// Text utilities
+@mixin text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Responsive breakpoints
+@mixin mobile {
+  @media (max-width: #{$mobile - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: $mobile) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $tablet) {
+    @content;
+  }
+}
