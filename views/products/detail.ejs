@@ -93,28 +93,19 @@
 <script>
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Product detail page JavaScript loaded');
-    
     // Handle Add to Cart functionality
     const addToCartBtn = document.querySelector('.add-to-cart-btn');
-    console.log('🔍 Found add to cart button:', addToCartBtn);
     
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', function(e) {
             e.preventDefault(); // Prevent any default action
             
             const productId = this.getAttribute('data-product-id');
-            console.log('🔄 Add to cart clicked! Product ID:', productId);
             
             const quantityInput = document.getElementById(`quantity-${productId}`);
             const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
             
-            console.log('📏 Quantity input found:', quantityInput);
-            console.log('🔢 Quantity value:', quantity);
-            console.log('🔍 Checking for CartManager...', window.CartManager);
-            
             if (window.CartManager) {
-                console.log('✅ CartManager found, calling addToCart...');
                 window.CartManager.addToCart(productId, quantity);
             } else {
                 console.error('❌ Cart functionality not loaded - window.CartManager not found');

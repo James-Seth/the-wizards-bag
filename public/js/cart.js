@@ -304,15 +304,19 @@ window.CartManager = {
      * Add item to cart from product page
      */
     addToCart: function(productId, quantity = 1) {
-        console.log('🛒 CartManager.addToCart called:', { productId, quantity });
-        
-        const button = document.querySelector(`[data-product-id="${productId}"]`) || 
-                      document.querySelector('.add-to-cart-btn');
-        
-        console.log('🔍 Found button:', button);
+        // Try multiple button selectors to find the correct add-to-cart button
+        const button = document.querySelector(`[data-product-id="${productId}"].add-to-cart-btn`) || 
+                      document.querySelector(`[data-product-id="${productId}"]`) || 
+                      document.querySelector('.add-to-cart-btn') ||
+                      document.querySelector(`button[data-product-id="${productId}"]`) ||
+                      document.querySelector('button.checkout-btn.add-to-cart-btn');
         
         if (button) {
             button.disabled = true;
+            // Store original text if not already stored
+            if (!button.dataset.originalText) {
+                button.dataset.originalText = button.textContent;
+            }
             button.textContent = 'Adding...';
         }
 
@@ -320,8 +324,6 @@ window.CartManager = {
             id: productId, 
             quantity: quantity 
         };
-        
-        console.log('📤 Sending request to /cart/add:', requestData);
 
         return fetch('/cart/add', {
             method: 'POST',
@@ -331,15 +333,11 @@ window.CartManager = {
             body: JSON.stringify(requestData)
         })
         .then(response => {
-            console.log('📥 Response status:', response.status);
             return response.json();
         })
         .then(data => {
-            console.log('📦 Response data:', data);
-            
             if (data.success) {
                 // Update cart count
-                console.log('✅ Success! Updating cart count to:', data.cart.totalItems);
                 this.updateCartCount(data.cart.totalItems);
                 
                 // Show success message
@@ -366,7 +364,7 @@ window.CartManager = {
         .finally(() => {
             if (button) {
                 button.disabled = false;
-                button.textContent = 'Add to Cart';
+                button.textContent = button.dataset.originalText || '🛒 Add to Cart';
             }
         });
     },
@@ -375,16 +373,11 @@ window.CartManager = {
      * Update cart count in navbar
      */
     updateCartCount: function(count) {
-        console.log('🔢 updateCartCount called with:', count);
-        
         const cartBadge = document.getElementById('cart-count');
-        console.log('🎯 Found cart badge element:', cartBadge);
         
         if (cartBadge) {
             cartBadge.textContent = count;
             cartBadge.style.display = count > 0 ? 'inline' : 'none';
-            
-            console.log('🎨 Updated badge - text:', cartBadge.textContent, 'display:', cartBadge.style.display);
             
             // Add animation effect
             cartBadge.classList.add('cart-count');

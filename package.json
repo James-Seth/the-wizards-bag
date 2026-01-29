@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "dev:full": "npm run css:watch & nodemon src/server.js",
+    "css:build": "sass public/scss/style.scss public/css/style.css --style compressed",
+    "css:watch": "sass public/scss/style.scss public/css/style.css --watch --quiet",
+    "css:dev": "sass public/scss/style.scss public/css/style.css --style expanded --source-map",
     "seed": "node scripts/seedData.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -30,7 +34,8 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "sass": "^1.97.3"
   },
   "keywords": [
     "deck",

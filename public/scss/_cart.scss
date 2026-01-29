@@ -1,0 +1,129 @@
+// ========================================
+// Cart & Checkout Styles
+// ========================================
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.cart-item {
+  @include card-style;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  transition: all $transition-fast;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
+
+  .cart-item-image {
+    @include cover-image(120px);
+    border-radius: $border-radius-sm;
+  }
+
+  .cart-item-details {
+    @include flex-column;
+    flex: 1;
+    margin-left: $spacing-xl;
+
+    h4 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $text-dark;
+      margin-bottom: $spacing-sm;
+    }
+
+    .cart-item-price {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $success-green;
+      margin-bottom: $spacing-md;
+    }
+  }
+
+  .cart-item-actions {
+    @include flex-between;
+    align-items: center;
+    gap: $spacing-lg;
+
+    .quantity-controls {
+      @include flex-center;
+      gap: $spacing-sm;
+
+      input[type="number"] {
+        width: 60px;
+        text-align: center;
+        padding: $spacing-xs $spacing-sm;
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+      }
+
+      .btn-sm {
+        padding: $spacing-xs $spacing-sm;
+        font-size: $font-size-sm;
+      }
+    }
+
+    .remove-btn {
+      @include button-style(#dc3545, $white);
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+.cart-summary {
+  @include card-style;
+  padding: $spacing-2xl;
+  background: $light-bg;
+
+  h3 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-dark;
+    margin-bottom: $spacing-lg;
+  }
+
+  .summary-row {
+    @include flex-between;
+    padding: $spacing-sm 0;
+    border-bottom: 1px solid $border-light;
+
+    &:last-child {
+      border-bottom: none;
+      padding-top: $spacing-lg;
+      font-weight: $font-weight-bold;
+      font-size: $font-size-lg;
+    }
+  }
+
+  .checkout-btn {
+    width: 100%;
+    margin-top: $spacing-xl;
+    @include button-style;
+    @include primary-gradient;
+    font-size: $font-size-md;
+    padding: $spacing-lg;
+  }
+}
+
+.empty-cart {
+  text-align: center;
+  padding: $spacing-4xl;
+  color: $text-muted;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: $spacing-lg;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: $font-size-xl;
+    margin-bottom: $spacing-lg;
+  }
+
+  .btn {
+    @include button-style;
+    @include primary-gradient;
+  }
+}

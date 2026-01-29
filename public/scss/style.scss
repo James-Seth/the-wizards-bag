@@ -1,0 +1,20 @@
+// ========================================
+// Main SCSS File - Import All Modules
+// ========================================
+
+// Import variables and mixins first
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Import base styles
+@use 'base';
+
+// Import component styles
+@use 'navbar';
+@use 'hero';
+@use 'products';
+@use 'cart';
+@use 'synthwave';
+
+// Import responsive styles last
+@use 'responsive';

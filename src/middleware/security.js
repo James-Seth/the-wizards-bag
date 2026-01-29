@@ -43,7 +43,7 @@ const rateLimiters = {
   // Loose for cart operations
   cart: createRateLimiter(
     1 * 60 * 1000, // 1 minute
-    20, // 20 requests
+    100, // 100 requests (increased for better UX)
     'Too many cart operations. Please slow down.'
   ),
   
