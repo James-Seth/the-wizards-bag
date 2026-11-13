@@ -1,6 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Product = require('../src/models/Product');
+const { logger } = require('../src/utils/logger');
+const { getDatabaseConfig } = require('../config/database');
 
 const sampleProducts = [
   {
@@ -197,25 +199,22 @@ const sampleProducts = [
 
 async function seedDatabase() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kevins-deck-boxes');
-    console.log('Connected to database...');
+    await mongoose.connect(getDatabaseConfig().uri);
+    logger.info('Connected to database');
     
     // Clear existing products
     await Product.deleteMany({});
-    console.log('Cleared existing products...');
+    logger.info('Cleared existing products');
     
     // Insert sample products
     await Product.insertMany(sampleProducts);
-    console.log('Sample products inserted successfully!');
+    logger.info('Sample products inserted successfully');
     
-    console.log(`\n✅ Database seeded with ${sampleProducts.length} products:`);
-    sampleProducts.forEach(product => {
-      console.log(`   - ${product.name} ($${product.price})`);
-    });
+    logger.info('Database seeded', { productCount: sampleProducts.length });
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    logger.error('Error seeding database', { error });
     process.exit(1);
   }
 }

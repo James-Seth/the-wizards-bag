@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const OrderItemSchema = new mongoose.Schema({
     productId: {
@@ -36,6 +37,12 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        index: true
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
         index: true
     },
     customer: {
@@ -134,16 +141,6 @@ const orderSchema = new mongoose.Schema({
         type: String,
         maxLength: 500
     },
-    // Legacy fields for backward compatibility
-    customerName: {
-        type: String
-    },
-    boxType: {
-        type: String
-    },
-    quantity: {
-        type: Number
-    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -162,26 +159,14 @@ orderSchema.pre('save', async function(next) {
     next();
 });
 
-// Generate order number format: WB-YYYYMMDD-XXXX
+// Generate a collision-resistant daily order number.
 orderSchema.statics.generateOrderNumber = async function() {
     const now = new Date();
     const dateStr = now.getFullYear().toString() + 
                    (now.getMonth() + 1).toString().padStart(2, '0') + 
                    now.getDate().toString().padStart(2, '0');
     
-    // Find the highest order number for today
-    const orderPrefix = `WB-${dateStr}-`;
-    const lastOrder = await this.findOne({
-        orderNumber: new RegExp(`^${orderPrefix}`)
-    }).sort({ orderNumber: -1 });
-    
-    let sequence = 1;
-    if (lastOrder) {
-        const lastSequence = parseInt(lastOrder.orderNumber.slice(-4));
-        sequence = lastSequence + 1;
-    }
-    
-    return `${orderPrefix}${sequence.toString().padStart(4, '0')}`;
+    return `WB-${dateStr}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
 }
 
 // Virtual for formatted order date

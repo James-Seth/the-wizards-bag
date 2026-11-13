@@ -3,8 +3,8 @@ module.exports = {
   app: {
     name: 'The Wizards Bag',
     version: '1.0.0',
-    description: 'E-commerce website fordeck boxes and TTRPG accessories',
-    author: 'Kevin',
+    description: 'E-commerce website for deck boxes and TTRPG accessories',
+    author: 'Seth James',
   },
 
   // View engine settings
@@ -13,26 +13,11 @@ module.exports = {
     cache: process.env.NODE_ENV === 'production'
   },
 
-  // Session settings (for future authentication)
-  session: {
-    secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  },
-
   // Security settings
   security: {
     cors: {
       origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3001'],
       credentials: true
-    },
-    rateLimit: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100 // limit each IP to 100 requests per windowMs
     }
   },
 

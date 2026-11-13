@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Wizard Hat Base -->
+  <polygon points="32,8 48,20 32,32 16,20" fill="url(#purpleGrad)"/>
+  
+  <!-- Hat Band -->
+  <rect x="12" y="24" width="40" height="4" fill="#f0f0f0"/>
+  
+  <!-- Magic Sparkle Star -->
+  <polygon points="32,8 34,16 42,16 34,21 36,29 32,23 28,29 30,21 22,16 30,16" 
+           fill="#ffd700"/>
+</svg>

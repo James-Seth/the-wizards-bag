@@ -1,4 +1,4 @@
-const { formatPrice, formatCategory, truncateText, slugify, isValidObjectId } = require('../utils/helpers');
+const { formatPrice, formatCategory, truncateText, slugify, isValidObjectId } = require('../src/utils/helpers');
 
 describe('Helper Functions', () => {
   describe('formatPrice', () => {

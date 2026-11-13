@@ -1,9 +1,14 @@
 const express = require('express');
+const crypto = require('crypto');
 const User = require('../models/User');
-const { logger } = require('../../utils/logger');
+const { logger } = require('../utils/logger');
 const { requireAuth, requireGuest } = require('../middleware/auth');
 const { rateLimiters, validateInput, logSecurityEvent } = require('../middleware/security');
 const router = express.Router();
+
+const regenerateSession = req => new Promise((resolve, reject) => {
+    req.session.regenerate(error => error ? reject(error) : resolve());
+});
 
 // GET /auth/signup - Show signup form
 router.get('/signup', (req, res) => {
@@ -34,8 +39,8 @@ router.post('/signup', rateLimiters.auth, async (req, res) => {
             errors.push('Please enter a valid email address');
         }
         
-        if (!password || password.length < 6) {
-            errors.push('Password must be at least 6 characters long');
+        if (!password || password.length < 8) {
+            errors.push('Password must be at least 8 characters long');
         }
         
         if (password !== confirmPassword) {
@@ -122,19 +127,19 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
             return res.redirect('/auth/login');
         }
         
-        // Set session
+        const redirectTo = req.session.returnTo || '/';
+        await regenerateSession(req);
+
         req.session.user = {
-            id: user._id,
+            id: user._id.toString(),
             name: user.name,
-            email: user.email
+            email: user.email,
+            isAdmin: user.isAdmin
         };
         
         logger.info(`User logged in: ${user.email}`);
         req.flash('success', `Welcome back, ${user.name}!`);
         
-        // Redirect to intended page or home
-        const redirectTo = req.session.returnTo || '/';
-        delete req.session.returnTo;
         res.redirect(redirectTo);
         
     } catch (error) {
@@ -261,20 +266,17 @@ router.post('/forgot-password', requireGuest, async (req, res) => {
         
         if (user) {
             // Generate reset token
-            const crypto = require('crypto');
             const resetToken = crypto.randomBytes(32).toString('hex');
+            const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
             const resetExpires = new Date(Date.now() + 3600000); // 1 hour
             
             await User.findByIdAndUpdate(user._id, {
-                resetPasswordToken: resetToken,
+                resetPasswordTokenHash: resetTokenHash,
                 resetPasswordExpires: resetExpires
             });
             
-            // TODO: Send email with reset link
-            // For now, just log the reset URL
-            const resetUrl = `${req.protocol}://${req.get('host')}/auth/reset-password/${resetToken}`;
-            logger.info(`Password reset requested for: ${email}`);
-            logger.info(`Reset URL: ${resetUrl}`);
+            // TODO: Deliver the raw token in a reset email; never log it.
+            logger.info('Password reset requested', { userId: user._id });
         }
         
         req.flash('success', successMessage);
@@ -291,9 +293,10 @@ router.post('/forgot-password', requireGuest, async (req, res) => {
 router.get('/reset-password/:token', requireGuest, async (req, res) => {
     try {
         const { token } = req.params;
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
         
         const user = await User.findOne({
-            resetPasswordToken: token,
+            resetPasswordTokenHash: tokenHash,
             resetPasswordExpires: { $gt: Date.now() },
             isActive: true
         });
@@ -322,10 +325,11 @@ router.post('/reset-password/:token', requireGuest, async (req, res) => {
     try {
         const { token } = req.params;
         const { password, confirmPassword } = req.body;
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
         
         // Validate passwords
-        if (!password || password.length < 6) {
-            req.flash('error', 'Password must be at least 6 characters long');
+        if (!password || password.length < 8) {
+            req.flash('error', 'Password must be at least 8 characters long');
             return res.redirect(`/auth/reset-password/${token}`);
         }
         
@@ -336,7 +340,7 @@ router.post('/reset-password/:token', requireGuest, async (req, res) => {
         
         // Find user with valid token
         const user = await User.findOne({
-            resetPasswordToken: token,
+            resetPasswordTokenHash: tokenHash,
             resetPasswordExpires: { $gt: Date.now() },
             isActive: true
         });
@@ -348,9 +352,11 @@ router.post('/reset-password/:token', requireGuest, async (req, res) => {
         
         // Update password and clear reset token
         user.password = password;
-        user.resetPasswordToken = undefined;
+        user.resetPasswordTokenHash = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
+
+        await regenerateSession(req);
         
         logger.info(`Password reset completed for: ${user.email}`);
         req.flash('success', 'Password reset successful! Please log in with your new password.');

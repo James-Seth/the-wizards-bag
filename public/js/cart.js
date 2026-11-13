@@ -28,6 +28,38 @@ function refreshInventoryDisplays() {
     }
 }
 
+function showMessage(message, type = 'success') {
+    const existingMessage = document.querySelector('.cart-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `cart-message alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+
+    const content = document.createElement('div');
+    content.className = 'd-flex align-items-center';
+
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2`;
+
+    const messageText = document.createElement('span');
+    messageText.textContent = message;
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'btn-close ms-auto';
+    closeButton.setAttribute('aria-label', 'Close');
+    closeButton.addEventListener('click', () => messageDiv.remove());
+
+    content.append(icon, messageText, closeButton);
+    messageDiv.appendChild(content);
+    document.body.appendChild(messageDiv);
+
+    setTimeout(() => messageDiv.remove(), 3000);
+}
+
 function initializeCartSystem() {
     // Cart interaction elements
     const quantityInputs = document.querySelectorAll('.quantity-input');
@@ -75,38 +107,6 @@ function initializeCartSystem() {
             cartBadge.textContent = cartData.totalItems;
             cartBadge.style.display = cartData.totalItems > 0 ? 'inline' : 'none';
         }
-    }
-
-    /**
-     * Show success/error message
-     */
-    function showMessage(message, type = 'success') {
-        // Remove existing messages
-        const existingMessage = document.querySelector('.cart-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // Create new message
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `cart-message alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
-        messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        messageDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-            </div>
-        `;
-        
-        document.body.appendChild(messageDiv);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 3000);
     }
 
     /**
@@ -403,37 +403,7 @@ window.CartManager = {
         }
     },
 
-    /**
-     * Show success/error message
-     */
-    showMessage: function(message, type = 'success') {
-        // Remove existing messages
-        const existingMessage = document.querySelector('.cart-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // Create new message
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `cart-message alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
-        messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        messageDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-            </div>
-        `;
-        
-        document.body.appendChild(messageDiv);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 3000);
-    },
+    showMessage,
 
     /**
      * Animate cart icon when item is added

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Node.js 16+ installed
-- MongoDB database (local or MongoDB Atlas)
+- MongoDB replica set (local single-node replica set or MongoDB Atlas)
 - Git for version control
 
 ## Environment Setup
@@ -25,7 +25,7 @@
    
    Edit `.env` with your configuration:
    ```env
-   MONGODB_URI=mongodb://localhost:27017/the-wizards-bag
+   MONGODB_URI=mongodb://localhost:00000/the-wizards-bag
    PORT=3001
    NODE_ENV=production
    SESSION_SECRET=your-secure-session-secret
@@ -35,7 +35,8 @@
 
 1. **Start MongoDB** (if using local instance):
    ```bash
-   mongod
+   mongod --replSet rs0
+   mongosh --eval "rs.initiate()"
    ```
 
 2. **Seed the database:**
@@ -147,10 +148,17 @@
 
 ## Database Setup
 
+Checkout uses MongoDB transactions to commit orders and inventory decrements atomically. MongoDB must run as a replica set; standalone instances cannot process checkout transactions.
+
+New users are non-admin by default. Grant product-management access by setting `isAdmin: true` directly on a trusted user document.
+
 ### Local MongoDB
 ```bash
 # Start MongoDB
-mongod --dbpath /path/to/data/directory
+mongod --replSet rs0 --dbpath /path/to/data/directory
+
+# Initialize the single-node replica set once
+mongosh --eval "rs.initiate()"
 
 # Create database and user (optional)
 mongo

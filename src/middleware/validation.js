@@ -29,8 +29,8 @@ const validateProduct = [
     .withMessage('Price must be a positive number'),
   
   body('category')
-    .isIn(['deck-boxes', 'tokens', 'accessories'])
-    .withMessage('Category must be one of: deck-boxes, tokens, accessories'),
+    .isIn(['deck-boxes', 'tokens', 'accessories', 'custom'])
+    .withMessage('Category must be one of: deck-boxes, tokens, accessories, custom'),
   
   body('inventory')
     .isInt({ min: 0 })
@@ -63,8 +63,8 @@ const validateProductId = [
 const validateCategoryQuery = [
   query('category')
     .optional()
-    .isIn(['deck-boxes', 'tokens', 'accessories'])
-    .withMessage('Invalid category. Must be one of: deck-boxes, tokens, accessories'),
+    .isIn(['deck-boxes', 'tokens', 'accessories', 'custom'])
+    .withMessage('Invalid category. Must be one of: deck-boxes, tokens, accessories, custom'),
   
   handleValidationErrors
 ];

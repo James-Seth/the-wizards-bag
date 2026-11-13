@@ -10,6 +10,17 @@
 }
 
 // Animations
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes cartBounce {
   0%, 20%, 60%, 100% { 
     transform: translateY(0); 
@@ -19,6 +30,16 @@
   }
   80% { 
     transform: translateY(-5px); 
+  }
+}
+
+main {
+  animation: pageEnter 380ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main {
+    animation: none;
   }
 }
 

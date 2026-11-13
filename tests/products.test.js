@@ -5,7 +5,7 @@ const app = require('../src/server');
 describe('Product Routes', () => {
   beforeAll(async () => {
     // Connect to test database
-    const testDbUri = 'mongodb://localhost:27017/kevins-deck-boxes-test';
+    const testDbUri = 'mongodb://localhost:27017/the-wizards-bag-test';
     await mongoose.connect(testDbUri);
   });
 
@@ -24,6 +24,11 @@ describe('Product Routes', () => {
 
     test('should filter by category', async () => {
       const response = await request(app).get('/products?category=deck-boxes');
+      expect(response.status).toBe(200);
+    });
+
+    test('should accept the custom category', async () => {
+      const response = await request(app).get('/products?category=custom');
       expect(response.status).toBe(200);
     });
 

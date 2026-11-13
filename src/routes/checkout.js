@@ -1,12 +1,16 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { getCartSummary } = require('../../middleware/cart');
-const { logger } = require('../../utils/logger');
+const { getCartSummary } = require('../middleware/cart');
+const { logger } = require('../utils/logger');
 const { requireAuth } = require('../middleware/auth');
-const { rateLimiters, validateInput, logSecurityEvent } = require('../middleware/security');
+const { rateLimiters } = require('../middleware/security');
+const roundMoney = amount => Math.round((amount + Number.EPSILON) * 100) / 100;
+
+const createStockError = message => Object.assign(new Error(message), { code: 'OUT_OF_STOCK' });
 
 /**
  * GET /checkout
@@ -50,7 +54,7 @@ router.get('/', requireAuth, async (req, res) => {
         const subtotal = cartSummary.totalPrice;
         const tax = 0; // Could implement tax calculation here
         const shipping = subtotal >= 50 ? 0 : 9.99; // Free shipping over $50
-        const total = subtotal + tax + shipping;
+        const total = roundMoney(subtotal + tax + shipping);
 
         res.render('checkout/index', {
             title: 'Checkout',
@@ -132,82 +136,75 @@ router.post('/', rateLimiters.checkout, requireAuth, [
             return res.redirect('/cart');
         }
 
-        // Validate inventory and collect product data
-        const orderItems = [];
-        const productUpdates = [];
+        const checkoutSession = await mongoose.startSession();
+        let createdOrderId;
 
-        for (const cartItem of req.session.cart.items) {
-            const product = await Product.findById(cartItem.productId);
-            
-            if (!product) {
-                req.flash('error', `Product ${cartItem.productId} no longer exists.`);
-                return res.redirect('/cart');
-            }
-            
-            if (product.inventory < cartItem.quantity) {
-                req.flash('error', `${product.name} only has ${product.inventory} items in stock.`);
-                return res.redirect('/cart');
-            }
+        try {
+            await checkoutSession.withTransaction(async () => {
+                const orderItems = [];
 
-            // Prepare order item
-            orderItems.push({
-                productId: product._id,
-                productName: product.name,
-                productImage: product.image,
-                price: product.price,
-                quantity: cartItem.quantity,
-                subtotal: product.price * cartItem.quantity
+                for (const cartItem of req.session.cart.items) {
+                    const product = await Product.findById(cartItem.productId).session(checkoutSession);
+
+                    if (!product) {
+                        throw createStockError('A product in your cart is no longer available.');
+                    }
+
+                    if (product.inventory < cartItem.quantity) {
+                        throw createStockError(`${product.name} only has ${product.inventory} items in stock.`);
+                    }
+
+                    const stockUpdate = await Product.updateOne(
+                        { _id: product._id, inventory: { $gte: cartItem.quantity } },
+                        { $inc: { inventory: -cartItem.quantity } },
+                        { session: checkoutSession }
+                    );
+
+                    if (stockUpdate.modifiedCount !== 1) {
+                        throw createStockError(`${product.name} is no longer available in the requested quantity.`);
+                    }
+
+                    orderItems.push({
+                        productId: product._id,
+                        productName: product.name,
+                        productImage: product.image,
+                        price: product.price,
+                        quantity: cartItem.quantity,
+                        subtotal: roundMoney(product.price * cartItem.quantity)
+                    });
+                }
+
+                const subtotal = roundMoney(orderItems.reduce((sum, item) => sum + item.subtotal, 0));
+                const tax = 0;
+                const shipping = subtotal >= 50 ? 0 : 9.99;
+                const total = roundMoney(subtotal + tax + shipping);
+
+                const order = new Order({
+                    userId: req.session.user.id,
+                    customer: {
+                        name: req.body.customer.name,
+                        email: req.body.customer.email,
+                        phone: req.body.customer.phone
+                    },
+                    shippingAddress: {
+                        street: req.body.shippingAddress.street,
+                        city: req.body.shippingAddress.city,
+                        state: req.body.shippingAddress.state,
+                        zipCode: req.body.shippingAddress.zipCode,
+                        country: req.body.shippingAddress.country || 'United States'
+                    },
+                    items: orderItems,
+                    totals: { subtotal, tax, shipping, total },
+                    status: 'confirmed',
+                    paymentStatus: 'pending',
+                    notes: req.body.notes || ''
+                });
+
+                await order.save({ session: checkoutSession });
+                createdOrderId = order._id;
             });
-
-            // Prepare inventory update
-            productUpdates.push({
-                productId: product._id,
-                newInventory: product.inventory - cartItem.quantity
-            });
-        }
-
-        // Calculate totals
-        const subtotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
-        const tax = 0; // Could implement tax calculation here
-        const shipping = subtotal >= 50 ? 0 : 9.99; // Free shipping over $50
-        const total = subtotal + tax + shipping;
-
-        // Create order
-        const order = new Order({
-            customer: {
-                name: req.body.customer.name,
-                email: req.body.customer.email,
-                phone: req.body.customer.phone
-            },
-            shippingAddress: {
-                street: req.body.shippingAddress.street,
-                city: req.body.shippingAddress.city,
-                state: req.body.shippingAddress.state,
-                zipCode: req.body.shippingAddress.zipCode,
-                country: req.body.shippingAddress.country || 'United States'
-            },
-            items: orderItems,
-            totals: {
-                subtotal,
-                tax,
-                shipping,
-                total
-            },
-            status: 'confirmed',
-            paymentStatus: 'pending',
-            notes: req.body.notes || ''
-        });
-
-        // Generate order number before saving
-        order.orderNumber = await Order.generateOrderNumber();
-        await order.save();
-
-        // Update product inventories
-        for (const update of productUpdates) {
-            await Product.findByIdAndUpdate(
-                update.productId,
-                { $set: { inventory: update.newInventory } }
-            );
+        } finally {
+            await checkoutSession.endSession();
         }
 
         // Clear cart
@@ -217,12 +214,16 @@ router.post('/', rateLimiters.checkout, requireAuth, [
             totalPrice: 0
         };
 
-        logger.info('Order created successfully:', order.orderNumber);
+        logger.info('Order created successfully', { orderId: createdOrderId });
 
         // Redirect to confirmation page
-        res.redirect(`/checkout/confirmation/${order._id}`);
+        res.redirect(`/checkout/confirmation/${createdOrderId}`);
 
     } catch (error) {
+        if (error.code === 'OUT_OF_STOCK') {
+            req.flash('error', error.message);
+            return res.redirect('/cart');
+        }
         logger.error('Error processing order:', error);
         req.flash('error', 'An error occurred while processing your order. Please try again.');
         res.redirect('/checkout');
@@ -233,13 +234,20 @@ router.post('/', rateLimiters.checkout, requireAuth, [
  * GET /checkout/confirmation/:orderId
  * Display order confirmation
  */
-router.get('/confirmation/:orderId', async (req, res) => {
+router.get('/confirmation/:orderId', requireAuth, async (req, res) => {
     try {
         const order = await Order.findById(req.params.orderId).populate('items.productId');
         
         if (!order) {
             req.flash('error', 'Order not found.');
             return res.redirect('/');
+        }
+
+        if (!order.userId || !order.userId.equals(req.session.user.id)) {
+            return res.status(404).render('error', {
+                error: 'Order not found.',
+                title: 'Order Not Found'
+            });
         }
 
         res.render('checkout/confirmation', {

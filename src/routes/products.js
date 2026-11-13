@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const { getAvailableInventory } = require('../../middleware/cart');
+const { getAvailableInventory } = require('../middleware/cart');
+const { requireAdmin } = require('../middleware/auth');
 const { 
   validateProductId, 
   validateCategoryQuery, 
   validateSearch,
   validateProduct
-} = require('../../middleware/validation');
+} = require('../middleware/validation');
 
 // GET all products
 router.get('/', validateCategoryQuery, async (req, res) => {
@@ -18,7 +19,7 @@ router.get('/', validateCategoryQuery, async (req, res) => {
     
     // Calculate available inventory for each product
     const productsWithAvailability = products.map(product => {
-      const availableInventory = getAvailableInventory(product, req.session.cart);
+      const availableInventory = getAvailableInventory(product);
       return {
         ...product.toObject(),
         availableInventory
@@ -50,7 +51,7 @@ router.get('/:id', validateProductId, async (req, res) => {
     }
     
     // Calculate available inventory
-    const availableInventory = getAvailableInventory(product, req.session.cart);
+    const availableInventory = getAvailableInventory(product);
     const productWithAvailability = {
       ...product.toObject(),
       availableInventory
@@ -69,7 +70,7 @@ router.get('/:id', validateProductId, async (req, res) => {
 });
 
 // POST create new product (for future admin functionality)
-router.post('/', validateProduct, async (req, res) => {
+router.post('/', requireAdmin, validateProduct, async (req, res) => {
   try {
     const product = new Product(req.body);
     await product.save();
@@ -85,7 +86,7 @@ router.post('/', validateProduct, async (req, res) => {
 });
 
 // PUT update product (for future admin functionality)
-router.put('/:id', validateProductId, validateProduct, async (req, res) => {
+router.put('/:id', requireAdmin, validateProductId, validateProduct, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id, 
@@ -102,7 +103,7 @@ router.put('/:id', validateProductId, validateProduct, async (req, res) => {
 });
 
 // DELETE product (for future admin functionality)
-router.delete('/:id', validateProductId, async (req, res) => {
+router.delete('/:id', requireAdmin, validateProductId, async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {

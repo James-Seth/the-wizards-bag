@@ -4,6 +4,7 @@
  */
 
 const rateLimit = require('express-rate-limit');
+const { logger } = require('../utils/logger');
 
 /**
  * Custom rate limiters for different endpoints
@@ -78,43 +79,6 @@ const validateInput = {
 };
 
 /**
- * Security headers middleware for specific routes
- */
-const securityHeaders = (req, res, next) => {
-  // Additional security headers for sensitive operations
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
-  // Remove sensitive headers
-  res.removeHeader('X-Powered-By');
-  res.removeHeader('Server');
-  
-  next();
-};
-
-/**
- * Sanitize request body for dangerous patterns
- */
-const sanitizeBody = (req, res, next) => {
-  if (req.body) {
-    // Remove any keys that start with $ or contain .
-    const sanitize = (obj) => {
-      for (const key in obj) {
-        if (key.startsWith('$') || key.includes('.')) {
-          delete obj[key];
-        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-          sanitize(obj[key]);
-        }
-      }
-    };
-    sanitize(req.body);
-  }
-  next();
-};
-
-/**
  * Log security events
  */
 const logSecurityEvent = (event, req, additionalInfo = {}) => {
@@ -130,13 +94,11 @@ const logSecurityEvent = (event, req, additionalInfo = {}) => {
     ...additionalInfo
   };
   
-  console.warn('SECURITY EVENT:', JSON.stringify(securityLog, null, 2));
+  logger.warn('Security event', securityLog);
 };
 
 module.exports = {
   rateLimiters,
   validateInput,
-  securityHeaders,
-  sanitizeBody,
   logSecurityEvent
 };

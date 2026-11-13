@@ -1,183 +1,104 @@
-# The Wizards Bag
+# The Wizard's Bag
 
-**The Wizards Bag** is an e-commerce platform designed specifically for tabletop gaming enthusiasts and trading card players. This Node.js application provides a comprehensive marketplace for custom deck boxes, premium gaming accessories, and TTRPG essentials. The **primary** purpose of this project is to develop and refine skills in building full-stack applications.
+I'm building The Wizard's Bag as an e-commerce app for tabletop gamers and trading card players. It's a place to browse deck boxes, tokens, and gaming accessories, with account sign-in, a session-based cart, and checkout.
 
-## What I'm Building Specifically
+This is also a full-stack project I'm using to build and refine my skills. The app uses Express and MongoDB on the server, EJS for rendered pages, and Bootstrap-based styling on the client.
 
-This project represents a complete e-commerce solution currently designed for a specific company selling custom gaming products. However, the architecture is built with scalability in mind - future iterations may evolve into a multi-vendor marketplace where independent artisans can showcase and sell their handcrafted gaming accessories. Whether you're a Magic: The Gathering player protecting valuable cards, a D&D enthusiast organizing dice and miniatures, or a game master seeking unique accessories, The Wizards Bag serves as your one-stop magical stopping place. Like the loot goblin reaching into a wizards bag. 
+## What's Working
 
-**Key Vision:**
-- **Premium Card Protection** - Custom deck boxes (wood, carved  with artistic flair)
-- **TTRPG Essentials** - Everything needed for epic adventures
-- **Artisan Craftsmanship** - Supporting independent creators and artists
-- **Community-Focused** - Built by gamers, for gamers
+- Product catalog with category filtering and product detail pages
+- Account signup, login, logout, and account updates
+- Cart add, update, and remove actions, with stock checks against current inventory
+- Checkout that creates an order and decrements inventory atomically
+- Order confirmation limited to the account that placed the order
+- Admin-only product create, update, and delete routes; new accounts are not admins by default
+- MongoDB-backed sessions, including cart data
+- Request, application, and security-event logging through Winston
+- Input validation, Helmet security headers, rate limiting, and MongoDB query sanitization
 
-**Target Audience:**
-- Trading card game players (MTG, Pokemon, Yu-Gi-Oh!)
-- Tabletop RPG enthusiasts (D&D, Pathfinder, etc.)
-- Board game collectors
-- Miniature painters and hobbyists
-- Game masters and dungeon masters
-
-## Features
-
-- **Product Catalog** - Browse and filter products by category
-- **Product Detail Pages** - Comprehensive product information and images
-- **MongoDB Integration** - Robust database with Mongoose ODM
-- **EJS Templating** - Server-side rendering with reusable layouts
-- **Input Validation** - Express Validator for secure data handling
-- **Bootstrap 5 Framework** - Modern, responsive UI components
-- **Mobile-First Design** - Optimized navigation and touch-friendly interface
-- **CDN Integration** - Fast loading with Bootstrap and Font Awesome CDNs
-- **Professional Architecture** - MVC pattern with organized folder structure
-
+Cart contents are not inventory reservations. Stock is checked when items are added and updated, and again atomically during checkout. Checkout transactions require MongoDB to run as a replica set.
 
 ## Project Structure
 
-```
-├── config/
-│   ├── app.js           # Application configuration
-│   └── database.js      # MongoDB connection setup
-├── docs/
-│   ├── API.md           # API documentation
-│   └── deployment.md    # Deployment guide
-├── middleware/
-│   └── validation.js    # Express Validator middleware
-├── utils/
-│   ├── helpers.js       # Utility functions
-│   └── logger.js        # Winston logging configuration
-├── tests/
-│   ├── helpers.test.js  # Helper function tests
-│   └── products.test.js # Product route tests
-├── src/
-│   ├── models/          # MongoDB models (Product.js, Order.js)
-│   ├── routes/          # Express routes (products.js)
-│   └── server.js        # Main application entry point
-├── views/
-│   ├── layouts/         # EJS layout templates
-│   │   ├── main.ejs     # Primary layout with Bootstrap navbar
-│   │   ├── header.ejs   # Header layout for product pages
-│   │   └── footer.ejs   # Footer with scripts
-│   ├── products/        # Product-related views
-│   │   ├── index.ejs    # Product catalog page
-│   │   └── detail.ejs   # Individual product pages
-│   ├── cart/
-│   │   └── index.ejs    # Shopping cart page
-│   ├── index.ejs        # Homepage
-│   └── error.ejs        # Error page template
-├── public/
-│   ├── css/
-│   │   └── style.css    # Custom styles (optimized, 320 lines)
-│   ├── js/
-│   │   └── main.js      # Client-side JavaScript
-│   └── images/          # Static product images
-├── scripts/
-│   └── seedData.js      # Database seeding script
-├── logs/                # Winston log files (auto-created)
-├── .env                 # Environment variables
-├── package.json         # Dependencies and scripts
-└── README.md           # Project documentation
+```text
+config/             Application settings and MongoDB connection
+
+docs/               API, deployment, security, and SCSS documentation
+public/             Browser JavaScript, images, icons, and SCSS
+scripts/            Database seed script
+src/
+  middleware/       Authentication, cart, security, and validation middleware
+  models/           User, Product, and Order models
+  routes/           Authentication, cart, checkout, and product routes
+  utils/            Shared helpers and Winston logger
+  server.js         Express application entry point
+tests/              Helper and product route tests
+views/              EJS pages, layouts, and partials
+
+.env.example        Example local environment settings
+package.json        Dependencies and npm scripts
 ```
 
 ## Getting Started
 
-1. **Install dependencies:**
+1. Install dependencies:
+
    ```bash
    npm install
    ```
 
-2. **Set up environment:**
+2. Copy `.env.example` to `.env`, then set a strong `SESSION_SECRET` and configure MongoDB. For local development, the app defaults to `mongodb://localhost:27017/the-wizards-bag`.
+
+   For production, I can use the full Atlas `MONGODB_URI` supplied by my provider, making sure credentials in the URI are percent-encoded. Alternatively, I can set `MONGODB_HOST`, `MONGODB_USERNAME`, `MONGODB_PASSWORD`, and optionally `MONGODB_DATABASE` separately; the app encodes the username and password when it builds the Atlas URI. `MONGODB_URI` takes precedence if both configurations are present. I keep real credentials in `.env` or the deployment platform's secret settings, never in source control.
+
+3. Start MongoDB as a replica set. For a local single-node setup, start MongoDB with `--replSet rs0`, then initialize it once:
+
    ```bash
-   cp .env.example .env
-   # Edit .env with your MongoDB connection string
+   mongosh --eval "rs.initiate()"
    ```
 
-3. **Seed the database:**
+4. Seed sample products if needed:
+
    ```bash
    npm run seed
    ```
 
-4. **Start the development server:**
+5. Start the development server:
+
    ```bash
    npm run dev
    ```
 
-5. **Open your browser:**
-   ```
-   http://localhost:3001
-   ```
+6. Open [http://localhost:3001](http://localhost:3001).
 
-## API Validation
+I need a MongoDB replica set because checkout saves the order and updates inventory in a transaction. MongoDB Atlas replica sets are supported too.
 
-The application uses Express Validator for input validation:
+## Admin Access
 
-     ### Product Validation Rules:
-     - **Name:** 3-100 characters
-     - **Description:** 10-500 characters  
-     - **Price:** Positive number
-     - **Category:** Must be one of: `deck-boxes`, `tokens`, `accessories`
-     - **Inventory:** Non-negative integer
-     - **Features:** Optional array of strings (1-100 chars each)
+Product create, update, and delete endpoints require an authenticated admin account. New accounts have `isAdmin: false`; I haven't built an admin management screen, so I grant that role directly to a trusted user document in MongoDB.
 
-     ### Route Validation:
-     - **Product ID:** Valid MongoDB ObjectId
-     - **Category Query:** Valid category name
-     - **Search Query:** 1-100 characters
+## Password Reset Email
 
-## Available Scripts
+Password-reset token generation and verification are in place, and I store only a SHA-256 hash of each token. Email delivery isn't connected yet, so the app currently has no way to send a reset link. I still need to choose an email provider, add its credentials to my local environment configuration, and wire it into the forgot-password route. The raw token or reset link should only go to the account owner's email and must never be written to logs.
 
-- `npm start` - Start production server
-- `npm run dev` - Start development server with nodemon
-- `npm run seed` - Seed database with sample products for testing
+## Useful Commands
 
-## Technologies Used
+- `npm start` starts the production server.
+- `npm run dev` starts the server with Nodemon.
+- `npm run seed` loads the sample products.
+- `npm run css:build` compiles the SCSS stylesheet.
+- `npm test` runs the Jest test suite when Jest is installed in the development environment.
 
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB 
-- **Frontend Framework:** Bootstrap 5.1.3 (CDN)
-- **Icons:** Font Awesome 6.0.0
-- **Templating:** EJS with reusable layouts and partials
-- **Validation:** Express Validator 
-- **Logging:** Winston with file rotation
-- **Session Management:** Express-session for cart persistence
-- **Configuration:** Environment-based config management
-- **Testing:** Jest (unit & integration tests)
-- **Development:** Nodemon with auto-reload
-- **Architecture:** Professional MVC pattern with organized structure
+## Stack
 
-## Future Updates:
+- Node.js and Express
+- MongoDB and Mongoose
+- EJS templates
+- express-session with connect-mongo
+- Bootstrap, SCSS, and browser-side JavaScript
+- Helmet, express-rate-limit, express-validator, and express-mongo-sanitize
+- Winston logging
 
-### Phase 1: Shopping Cart System (In Development - December 2025)
--- Completed 0--
-   (- **Shopping Cart Functionality** - Add/remove/update items with AJAX
-   - **Session-based Persistence** - Cart survives page refreshes and navigation
-   - **Real-time Cart Management** - Live totals and quantity updates
-   - **Mobile-Optimized Cart** - Touch-friendly controls and responsive design
-   - **Checkout Foundation** - Customer information and order summary
-   - **Enhanced UX** - Loading states, success/error messaging
-   - **Cart Validation** - Stock checking and quantity limits)
+## Current Direction
 
-### Phase 2: User Authentication & Admin
-- **User Registration/Login** - Account creation and authentication
-- **Admin Panel** - Product management dashboard (CRUD operations)
-- **User Roles** - Admin vs customer permissions - (Work in Progress)
-- **Order History** - Track purchases and order status - (Work in Progress)
-- **Inventory Management** - Real-time stock updates (Completed)
-
-### Phase 3: Advanced E-commerce
-- **Payment Integration** - Stripe/PayPal processing (This will be in the docs as a how to because you need a paypal business account for the api key required in the app)
-- **Order Management** - Complete order lifecycle
-- **Email Notifications** - Order confirmations and updates
-- **Search & Filters** - Enhanced product discovery
-- **Product Reviews** - Customer feedback system
-
-### Phase 4: Platform Evolution
-- **Multi-vendor Marketplace** - Artisan seller onboarding
-- **Seller Dashboard** - Tools for independent creators
-- **Commission System** - Revenue sharing for platform
-- **Advanced Analytics** - Sales reporting and insights
-- **Mobile App** - React Native companion app
-
-## License
-
-MIT License
+I'm working toward a more complete store experience: an admin interface, order and shipping notifications, payment integration, better product search, and eventually product reviews. Password-reset email delivery and the admin dashboard are next on the list.

@@ -70,7 +70,7 @@ The application now logs security events including:
 ## Performance Optimizations
 
 - **Gzip Compression**: Reduces response size by 60-80%
-- **Morgan Logging**: Efficient HTTP request logging
+- **Winston Logging**: Structured HTTP request logging
 - **Rate Limiting**: Prevents resource exhaustion
 - **Optimized Session Management**: Reduced session overhead
 

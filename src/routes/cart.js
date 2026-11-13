@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const { body, param, validationResult } = require('express-validator');
-const { logger } = require('../../utils/logger');
+const { logger } = require('../utils/logger');
 const { rateLimiters, validateInput } = require('../middleware/security');
 const {
     addToCart,
@@ -15,7 +15,7 @@ const {
     removeFromCart,
     clearCart,
     getCartSummary
-} = require('../../middleware/cart');
+} = require('../middleware/cart');
 
 // Validation rules for cart operations
 const addToCartValidation = [
@@ -57,6 +57,24 @@ router.post('/add', rateLimiters.cart, addToCartValidation, async (req, res) => 
             return res.status(404).json({
                 success: false,
                 message: 'Product not found'
+            });
+        }
+
+        const existingItem = req.session.cart.items.find(
+            item => item.productId === product._id.toString()
+        );
+        const requestedTotal = (existingItem?.quantity || 0) + quantity;
+        if (requestedTotal > product.inventory) {
+            return res.status(409).json({
+                success: false,
+                message: `Only ${product.inventory} of this item are currently in stock.`
+            });
+        }
+
+        if (requestedTotal > 99) {
+            return res.status(400).json({
+                success: false,
+                message: 'A maximum of 99 items can be added to your cart.'
             });
         }
 
@@ -131,6 +149,19 @@ router.post('/update/:productId', updateCartValidation, async (req, res) => {
 
         const productId = req.params.productId;
         const newQuantity = parseInt(req.body.quantity);
+
+        if (newQuantity > 0) {
+            const product = await Product.findById(productId);
+            if (!product) {
+                return res.status(404).json({ success: false, message: 'Product not found' });
+            }
+            if (newQuantity > product.inventory) {
+                return res.status(409).json({
+                    success: false,
+                    message: `Only ${product.inventory} of this item are currently in stock.`
+                });
+            }
+        }
 
         // Update cart item using session middleware
         updateCartItem(req.session.cart, productId, newQuantity);

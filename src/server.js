@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const { MongoStore } = require('connect-mongo');
 const path = require('path');
 const flash = require('connect-flash');
 
@@ -7,22 +8,20 @@ const flash = require('connect-flash');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
 const compression = require('compression');
-const morgan = require('morgan');
 
 // Load configuration
 const connectDB = require('../config/database');
 const appConfig = require('../config/app');
-const { requestLogger, errorLogger } = require('../utils/logger'); // Correct for src/server.js
-const { initializeCart } = require('../middleware/cart');
+const { logger, requestLogger, errorLogger } = require('./utils/logger');
+const { initializeCart } = require('./middleware/cart');
 const { setLocals } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Connect to MongoDB
-connectDB();
+const databaseReady = connectDB();
 
 // Security: Trust proxy if behind reverse proxy (for rate limiting)
 app.set('trust proxy', 1);
@@ -69,25 +68,26 @@ app.use('/auth/signup', authLimiter);
 // Security: Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
-// Security: Data sanitization against XSS
-app.use(xss());
-
 // Performance: Compression middleware
 app.use(compression());
 
 // Logging: HTTP request logger
-if (process.env.NODE_ENV === 'production') {
-  app.use(morgan('combined'));
-} else {
-  app.use(morgan('dev'));
-}
+app.use(requestLogger);
 
 // Set view engine
 app.set('view engine', appConfig.views.engine);
 app.set('views', path.join(__dirname, '../views'));
 
+// Persist sessions in the same MongoDB database as application data.
+const sessionStore = MongoStore.create({
+  clientPromise: databaseReady.then(connection => connection.getClient()),
+  ttl: 7 * 24 * 60 * 60
+});
+sessionStore.on('error', error => logger.error('Session store error', { error }));
+
 // Middleware
 app.use(session({
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'wizards-bag-secret-change-in-production',
   resave: false,
   saveUninitialized: false, // Don't create session until something stored
@@ -100,7 +100,6 @@ app.use(session({
   }
 }));
 app.use(flash()); // Use connect-flash after session middleware
-// Note: HTTP logging now handled by morgan middleware above
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -136,7 +135,7 @@ app.use(errorLogger); // Log errors
 // Global error handler
 app.use((err, req, res, next) => {
   // Log error details but don't expose them to client in production
-  console.error('Error:', err);
+  logger.error('Unhandled application error', { error: err });
   
   // Don't leak error details in production
   const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -157,9 +156,11 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Security: Rate limiting enabled`);
-  console.log(`Security: Helmet headers enabled`);
+  logger.info('Server started', {
+    port: PORT,
+    url: `http://localhost:${PORT}`,
+    environment: process.env.NODE_ENV || 'development',
+    rateLimitingEnabled: true,
+    helmetEnabled: true
+  });
 });
