@@ -6,9 +6,26 @@ const { requireAuth, requireGuest } = require('../middleware/auth');
 const { rateLimiters, validateInput, logSecurityEvent } = require('../middleware/security');
 const router = express.Router();
 
+// Give the visitor a brand-new session ID (prevents session fixation), but carry
+// their cart across. regenerate() throws away everything stored in the old session,
+// so without this a guest who logs in at checkout lands on an empty cart.
 const regenerateSession = req => new Promise((resolve, reject) => {
-    req.session.regenerate(error => error ? reject(error) : resolve());
+    const cart = req.session.cart;
+    req.session.regenerate(error => {
+        if (error) return reject(error);
+        if (cart) req.session.cart = cart;
+        resolve();
+    });
 });
+
+// Logs are often copied into bug reports, log services and backups, so keep customer
+// emails out of them. "seth@example.com" becomes "s***@example.com": still enough to
+// spot a pattern (lots of attempts on one account) without storing the address.
+const maskEmail = email => {
+    if (!email || typeof email !== 'string' || !email.includes('@')) return '[none]';
+    const [name, domain] = email.split('@');
+    return `${name.charAt(0)}***@${domain}`;
+};
 
 // GET /auth/signup - Show signup form
 router.get('/signup', (req, res) => {
@@ -56,7 +73,7 @@ router.post('/signup', rateLimiters.auth, async (req, res) => {
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            logSecurityEvent('SIGNUP_DUPLICATE_EMAIL', req, { email });
+            logSecurityEvent('SIGNUP_DUPLICATE_EMAIL', req, { email: maskEmail(email) });
             req.flash('error', 'An account with this email already exists');
             return res.redirect('/auth/signup');
         }
@@ -70,7 +87,7 @@ router.post('/signup', rateLimiters.auth, async (req, res) => {
         
         await user.save();
         
-        logger.info(`New user created: ${user.email}`);
+        logger.info('New user created', { userId: user._id });
         req.flash('success', 'Account created successfully! Please log in.');
         res.redirect('/auth/login');
         
@@ -106,7 +123,7 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
         }
         
         if (!validateInput.isValidEmail(email)) {
-            logSecurityEvent('LOGIN_INVALID_EMAIL', req, { email });
+            logSecurityEvent('LOGIN_INVALID_EMAIL', req, { email: maskEmail(email) });
             req.flash('error', 'Please enter a valid email address');
             return res.redirect('/auth/login');
         }
@@ -114,7 +131,7 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
         // Find user
         const user = await User.findOne({ email, isActive: true });
         if (!user) {
-            logSecurityEvent('LOGIN_USER_NOT_FOUND', req, { email });
+            logSecurityEvent('LOGIN_USER_NOT_FOUND', req, { email: maskEmail(email) });
             req.flash('error', 'Invalid email or password');
             return res.redirect('/auth/login');
         }
@@ -122,7 +139,7 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
         // Check password
         const isValidPassword = await user.comparePassword(password);
         if (!isValidPassword) {
-            logSecurityEvent('LOGIN_INVALID_PASSWORD', req, { email, userId: user._id });
+            logSecurityEvent('LOGIN_INVALID_PASSWORD', req, { userId: user._id });
             req.flash('error', 'Invalid email or password');
             return res.redirect('/auth/login');
         }
@@ -137,7 +154,7 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
             isAdmin: user.isAdmin
         };
         
-        logger.info(`User logged in: ${user.email}`);
+        logger.info('User logged in', { userId: user._id });
         req.flash('success', `Welcome back, ${user.name}!`);
         
         res.redirect(redirectTo);
@@ -149,9 +166,12 @@ router.post('/login', rateLimiters.auth, async (req, res) => {
     }
 });
 
-// GET /auth/logout - Handle logout
-router.get('/logout', (req, res) => {
-    const userName = req.session.user?.name;
+// POST /auth/logout - Handle logout
+// POST, not GET: a GET link can be triggered by any page (an <img src="/auth/logout">
+// on a forum would log your visitors out). Browsers also prefetch GET links, which
+// can log people out by accident. Changing state should always be a POST.
+router.post('/logout', (req, res) => {
+    const userId = req.session.user?.id;
     
     req.session.destroy((err) => {
         if (err) {
@@ -159,7 +179,7 @@ router.get('/logout', (req, res) => {
             return res.redirect('/');
         }
         
-        logger.info(`User logged out: ${userName}`);
+        logger.info('User logged out', { userId });
         res.redirect('/');
     });
 });
@@ -187,9 +207,10 @@ router.get('/account', requireAuth, async (req, res) => {
 });
 
 // POST /auth/account - Update account info
-router.post('/account', requireAuth, async (req, res) => {
+// Rate-limited because this form now checks a password and could otherwise be used to guess it.
+router.post('/account', rateLimiters.accountUpdate, requireAuth, async (req, res) => {
     try {
-        const { name, email } = req.body;
+        const { name, email, currentPassword } = req.body;
         const userId = req.session.user.id;
         
         // Validate inputs
@@ -199,7 +220,7 @@ router.post('/account', requireAuth, async (req, res) => {
             errors.push('Name must be at least 2 characters long');
         }
         
-        if (!email || !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        if (!email || !validateInput.isValidEmail(email)) {
             errors.push('Please enter a valid email address');
         }
         
@@ -208,9 +229,27 @@ router.post('/account', requireAuth, async (req, res) => {
             return res.redirect('/auth/account');
         }
         
+        const user = await User.findById(userId);
+        if (!user) {
+            req.flash('error', 'User not found');
+            return res.redirect('/auth/login');
+        }
+
+        // Changing the email is the first step of taking over an account (change the
+        // email, then "forgot password" sends the reset link to the attacker). So if the
+        // email is changing, prove you know the current password. Name-only changes don't need it.
+        const newEmail = email.toLowerCase().trim();
+        if (newEmail !== user.email) {
+            if (!currentPassword || !(await user.comparePassword(currentPassword))) {
+                logSecurityEvent('ACCOUNT_EMAIL_CHANGE_BAD_PASSWORD', req, { userId });
+                req.flash('error', 'Enter your current password to change your email address');
+                return res.redirect('/auth/account');
+            }
+        }
+
         // Check if email already exists (for different user)
         const existingUser = await User.findOne({ 
-            email: email.toLowerCase(), 
+            email: newEmail, 
             _id: { $ne: userId } 
         });
         
@@ -222,14 +261,14 @@ router.post('/account', requireAuth, async (req, res) => {
         // Update user
         await User.findByIdAndUpdate(userId, {
             name: name.trim(),
-            email: email.toLowerCase().trim()
+            email: newEmail
         });
         
         // Update session
         req.session.user.name = name.trim();
-        req.session.user.email = email.toLowerCase().trim();
+        req.session.user.email = newEmail;
         
-        logger.info(`User updated account: ${email}`);
+        logger.info('User updated account', { userId, emailChanged: newEmail !== user.email });
         req.flash('success', 'Account updated successfully!');
         res.redirect('/auth/account');
         
@@ -250,7 +289,9 @@ router.get('/forgot-password', requireGuest, (req, res) => {
 });
 
 // POST /auth/forgot-password - Send reset email
-router.post('/forgot-password', requireGuest, async (req, res) => {
+// rateLimiters.passwordReset: 3 requests per hour per IP. Once reset emails are sent,
+// this stops someone using the form to flood a person's inbox.
+router.post('/forgot-password', rateLimiters.passwordReset, requireGuest, async (req, res) => {
     try {
         const { email } = req.body;
         
@@ -358,7 +399,7 @@ router.post('/reset-password/:token', requireGuest, async (req, res) => {
 
         await regenerateSession(req);
         
-        logger.info(`Password reset completed for: ${user.email}`);
+        logger.info('Password reset completed', { userId: user._id });
         req.flash('success', 'Password reset successful! Please log in with your new password.');
         res.redirect('/auth/login');
         

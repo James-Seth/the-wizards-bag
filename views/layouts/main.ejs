@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | The Wizard's Bag</title>
+    <%# One <head> for the whole site. `locals.x` is used so a page that doesn't pass x still renders. %>
+    <title><%= (title && title !== siteName) ? `${title} | ${siteName}` : siteName %></title>
+    <meta name="description" content="<%= locals.description || defaultDescription %>">
+    <% if (locals.noindex) { %>
+    <meta name="robots" content="noindex, nofollow">
+    <% } %>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

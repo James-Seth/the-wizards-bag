@@ -9,6 +9,15 @@ const {
   validateSearch,
   validateProduct
 } = require('../middleware/validation');
+const { formatCategory, truncateText } = require('../utils/helpers');
+
+// One sentence per category for the <meta name="description"> tag.
+// Search engines often show this as the snippet under your link.
+const CATEGORY_DESCRIPTIONS = {
+  'deck-boxes': 'Custom deck boxes in carved wood, leather and acrylic that protect your trading cards in style.',
+  tokens: 'Metal life counters, spin-down dice, commander damage trackers and token sets for card games.',
+  accessories: 'Dice towers, playmats, card sleeves, binders and storage for your tabletop and card games.'
+};
 
 // GET all products
 router.get('/', validateCategoryQuery, async (req, res) => {
@@ -29,7 +38,11 @@ router.get('/', validateCategoryQuery, async (req, res) => {
     res.render('products/index', { 
       products: productsWithAvailability, 
       selectedCategory: category || 'all',
-      title: 'Product Catalog'
+      // Each category gets its own title so search results aren't all "Product Catalog".
+      title: category ? formatCategory(category) : 'Product Catalog',
+      description: category
+        ? CATEGORY_DESCRIPTIONS[category]
+        : 'Browse every deck box, token and tabletop accessory at The Wizard\'s Bag.'
     });
   } catch (error) {
     res.status(500).render('error', { 
@@ -59,7 +72,9 @@ router.get('/:id', validateProductId, async (req, res) => {
     
     res.render('products/detail', { 
       product: productWithAvailability, 
-      title: product.name 
+      title: product.name,
+      // Use the product's own description, cut to ~155 characters (the length Google shows).
+      description: truncateText(product.description, 155)
     });
   } catch (error) {
     res.status(500).render('error', { 

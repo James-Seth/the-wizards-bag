@@ -55,9 +55,9 @@
                                                 <div class="d-grid gap-2 d-md-flex justify-content-md-between">
                                                     <a href="/products/<%= product._id %>" class="btn btn-outline-primary btn-sm">View Details</a>
                                                     <% if (product.availableInventory > 0) { %>
-                                                        <button class="btn btn-success btn-sm add-to-cart-btn" 
-                                                                data-product-id="<%= product._id %>"
-                                                                onclick="handleQuickAddToCart('<%= product._id %>')">
+                                                        <button type="button" class="btn btn-success btn-sm add-to-cart-btn"
+                                                                aria-label="Add <%= product.name %> to cart"
+                                                                data-product-id="<%= product._id %>">
                                                             <i class="fas fa-cart-plus"></i>
                                                         </button>
                                                     <% } else { %>
@@ -91,23 +91,5 @@
     </div>
 </div>
 
-<script>
-// Handle quick add to cart from product listing
-function handleQuickAddToCart(productId) {
-    if (window.CartManager) {
-        window.CartManager.addToCart(productId, 1);
-    } else {
-        console.error('Cart functionality not loaded');
-        alert('Cart functionality is not available at this time.');
-    }
-}
-
-// Update cart count on page load
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.CartManager) {
-        window.CartManager.updateCartCount();
-    }
-});
-</script>
-
+<script src="/js/products.js" defer></script>
 <%- include('../layouts/footer') %>

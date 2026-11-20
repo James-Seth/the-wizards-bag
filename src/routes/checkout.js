@@ -207,12 +207,8 @@ router.post('/', rateLimiters.checkout, requireAuth, [
             await checkoutSession.endSession();
         }
 
-        // Clear cart
-        req.session.cart = {
-            items: [],
-            totalItems: 0,
-            totalPrice: 0
-        };
+        // Order placed: remove the cart entirely. The next add creates a fresh one.
+        delete req.session.cart;
 
         logger.info('Order created successfully', { orderId: createdOrderId });
 

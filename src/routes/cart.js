@@ -14,8 +14,12 @@ const {
     updateCartItem,
     removeFromCart,
     clearCart,
-    getCartSummary
+    getCartSummary,
+    getOrCreateCart
 } = require('../middleware/cart');
+
+// Reply used when someone edits a cart they don't have (no session yet).
+const noCart = res => res.status(404).json({ success: false, message: 'Item not found in cart' });
 
 // Validation rules for cart operations
 const addToCartValidation = [
@@ -60,7 +64,9 @@ router.post('/add', rateLimiters.cart, addToCartValidation, async (req, res) => 
             });
         }
 
-        const existingItem = req.session.cart.items.find(
+        // Read the cart if there is one; don't create it until we know the add will succeed.
+        // The ?. means "if req.session.cart is undefined, stop and give undefined".
+        const existingItem = req.session.cart?.items.find(
             item => item.productId === product._id.toString()
         );
         const requestedTotal = (existingItem?.quantity || 0) + quantity;
@@ -78,11 +84,11 @@ router.post('/add', rateLimiters.cart, addToCartValidation, async (req, res) => 
             });
         }
 
-        // Add to cart using session middleware
-        addToCart(req.session.cart, product, quantity);
+        // Add to cart. getOrCreateCart() creates the cart (and so the session)
+        // on the visitor's first add. This is the only route that does that.
+        addToCart(getOrCreateCart(req), product, quantity);
 
         logger.info('Item added to cart', {
-            sessionId: req.sessionID,
             productId: product._id,
             productName: product.name,
             quantity: quantity
@@ -114,12 +120,11 @@ router.get('/', async (req, res) => {
         const cartSummary = getCartSummary(req.session.cart);
         
         logger.info('Cart page accessed', {
-            sessionId: req.sessionID,
             itemCount: cartSummary.totalItems
         });
 
         res.render('cart/index', {
-            title: 'Shopping Cart - The Wizard\'s Bag',
+            title: 'Shopping Cart',
             cart: cartSummary,
             items: cartSummary.items
         });
@@ -163,11 +168,12 @@ router.post('/update/:productId', updateCartValidation, async (req, res) => {
             }
         }
 
+        if (!req.session.cart) return noCart(res);
+
         // Update cart item using session middleware
         updateCartItem(req.session.cart, productId, newQuantity);
 
         logger.info('Cart item updated', {
-            sessionId: req.sessionID,
             productId: productId,
             newQuantity: newQuantity
         });
@@ -207,11 +213,12 @@ router.post('/remove/:productId', [
 
         const productId = req.params.productId;
 
+        if (!req.session.cart) return noCart(res);
+
         // Remove from cart using session middleware
         removeFromCart(req.session.cart, productId);
 
         logger.info('Item removed from cart', {
-            sessionId: req.sessionID,
             productId: productId
         });
 
@@ -237,11 +244,10 @@ router.post('/remove/:productId', [
  */
 router.post('/clear', async (req, res) => {
     try {
-        clearCart(req.session.cart);
+        // Nothing to clear if they never had a cart, and no reason to create one.
+        if (req.session.cart) clearCart(req.session.cart);
 
-        logger.info('Cart cleared', {
-            sessionId: req.sessionID
-        });
+        logger.info('Cart cleared');
 
         return res.json({
             success: true,

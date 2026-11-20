@@ -28,8 +28,12 @@
    MONGODB_URI=mongodb://localhost:00000/the-wizards-bag
    PORT=3001
    NODE_ENV=production
-   SESSION_SECRET=your-secure-session-secret
+   SESSION_SECRET=a-random-string-of-at-least-32-characters
+   TRUST_PROXY=true
+   SITE_URL=https://www.your-domain.com
    ```
+
+   In production the app won't start without a real `SESSION_SECRET` (32+ characters, not the `.env.example` placeholder). Set `TRUST_PROXY=true` only if a host or reverse proxy sits in front of the app; see the README's Production Settings section.
 
 ## Local Development
 
@@ -114,7 +118,9 @@
    ```bash
    heroku config:set MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/the-wizards-bag
    heroku config:set NODE_ENV=production
-   heroku config:set SESSION_SECRET=your-secure-secret
+   heroku config:set SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
+   heroku config:set TRUST_PROXY=true
+   heroku config:set SITE_URL=https://the-wizards-bag.herokuapp.com
    ```
 
 3. **Deploy:**

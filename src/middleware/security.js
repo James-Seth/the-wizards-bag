@@ -17,6 +17,13 @@ const createRateLimiter = (windowMs, max, message) => {
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
+      logger.warn('Rate limit hit', { url: req.originalUrl, ip: req.ip });
+      // A normal form post (login, signup, forgot password) gets a real page;
+      // fetch() calls from cart.js get JSON. accepts(['json', 'html']) picks
+      // whichever the browser asked for first.
+      if (req.accepts(['json', 'html']) === 'html') {
+        return res.status(429).render('error', { title: 'Slow down', error: message });
+      }
       res.status(429).json({
         error: message,
         retryAfter: Math.round(windowMs / 1000)
@@ -34,6 +41,14 @@ const rateLimiters = {
     'Too many authentication attempts. Please try again in 15 minutes.'
   ),
   
+  // For the My Account form, which checks the current password when the email changes.
+  // Its own limiter (not `auth`) so editing your account doesn't use up login attempts.
+  accountUpdate: createRateLimiter(
+    15 * 60 * 1000, // 15 minutes
+    10, // 10 attempts
+    'Too many account changes. Please try again in 15 minutes.'
+  ),
+
   // Moderate for password reset requests
   passwordReset: createRateLimiter(
     60 * 60 * 1000, // 1 hour
@@ -89,7 +104,7 @@ const logSecurityEvent = (event, req, additionalInfo = {}) => {
     userAgent: req.get('User-Agent'),
     url: req.originalUrl,
     method: req.method,
-    sessionId: req.sessionID,
+    // No session ID here: it works like a temporary password, so it must never be logged.
     userId: req.session?.user?.id,
     ...additionalInfo
   };

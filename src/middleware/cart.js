@@ -6,32 +6,39 @@
 const { logger } = require('../utils/logger');
 
 /**
- * Initialize cart in session if it doesn't exist
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Next middleware function
+ * A fresh, empty cart object.
  */
-const initializeCart = (req, res, next) => {
-    try {
-        // Initialize cart if it doesn't exist
-        if (!req.session.cart) {
-            req.session.cart = {
-                items: [],
-                totalItems: 0,
-                totalPrice: 0,
-                lastUpdated: new Date()
-            };
-            logger.info('Cart initialized for session', { sessionId: req.sessionID });
-        }
+const emptyCart = () => ({
+    items: [],
+    totalItems: 0,
+    totalPrice: 0,
+    lastUpdated: new Date()
+});
 
-        // Make cart available in all templates
-        res.locals.cart = req.session.cart;
-        
-        next();
-    } catch (error) {
-        logger.error('Error initializing cart:', error);
-        next(error);
+/**
+ * Make the cart available to templates WITHOUT creating one.
+ *
+ * express-session only saves a session to MongoDB once something is written to it
+ * (saveUninitialized: false). The old version wrote an empty cart into every session
+ * on every request, so every visitor and every search-engine bot got a session record.
+ * Now we only read: visitors who never add anything never get a session.
+ */
+const exposeCart = (req, res, next) => {
+    res.locals.cart = getCartSummary(req.session.cart);
+    next();
+};
+
+/**
+ * Get the visitor's cart, creating it the first time they add something.
+ * This is the only place a cart (and therefore a session) gets created.
+ * @param {Object} req - Express request object
+ */
+const getOrCreateCart = (req) => {
+    if (!req.session.cart) {
+        req.session.cart = emptyCart();
+        logger.info('Cart created');
     }
+    return req.session.cart;
 };
 
 /**
@@ -196,6 +203,8 @@ const clearCart = (cart) => {
  * @param {Object} cart - Cart object from session
  */
 const getCartSummary = (cart) => {
+    // Visitors who haven't added anything have no cart yet; show them an empty one.
+    if (!cart) cart = emptyCart();
     return {
         items: cart.items,
         totalItems: cart.totalItems,
@@ -215,7 +224,8 @@ const getAvailableInventory = (product) => {
 };
 
 module.exports = {
-    initializeCart,
+    exposeCart,
+    getOrCreateCart,
     calculateCartTotals,
     findCartItem,
     addToCart,
